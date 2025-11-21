@@ -5,22 +5,22 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\User;
 
 class VerificationCodeMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $user;
+    public $code;
 
-    public function __construct(User $user)
+    public function __construct($code)
     {
-        $this->user = $user;
+        $this->code = $code;
     }
 
     public function build()
     {
         return $this->subject('Your Verification Code')
-                    ->view('emails.verification_code');
+                    ->view('emails.verification_code')
+                    ->with(['code' => $this->code]);
     }
 }

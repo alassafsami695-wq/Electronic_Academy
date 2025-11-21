@@ -1,17 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
+    <title>Email Verification Code</title>
 </head>
 <body>
-
-    <h2>مرحبا {{ $user->name }} 👋</h2>
-
-    <p>رمز التحقق الخاص بك هو:</p>
-
-    <h1 style="font-size: 32px; letter-spacing: 5px;">{{ $code }}</h1>
-
-    <p>صلاحية الرمز: 10 دقائق.</p>
-
+    <p>Hello,</p>
+    <p>Your verification code is: <strong>{{ $code }}</strong></p>
+    <p>Use this code to verify your email address.</p>
 </body>
 </html>
