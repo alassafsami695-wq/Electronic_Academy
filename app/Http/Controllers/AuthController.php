@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerificationCodeMail;
 
 class AuthController extends Controller
 {
-    // -------------- REGISTER ----------------
+    // ------------------------- REGISTER -------------------------
     public function register(Request $request)
     {
         $request->validate([
@@ -27,34 +27,34 @@ class AuthController extends Controller
             'is_verified' => false,
         ]);
 
-        // توليد كود التحقق
+        // إنشاء كود تحقق وإرساله بالبريد
         $code = rand(100000, 999999);
         $user->email_verification_code = $code;
         $user->save();
 
-        // إرسال الإيميل
         Mail::to($user->email)->send(new VerificationCodeMail($code));
 
         return response()->json([
             'message' => 'User registered successfully. Verification code sent to email.'
-        ]);
+        ], 201);
     }
 
-    // ------- LOGIN --------
+    // ------------------------- LOGIN -------------------------
     public function login(Request $request)
     {
         $request->validate([
-            "email" => "required|email",
-            "password" => "required"
+            'email' => 'required|email',
+            'password' => 'required',
         ]);
 
-        $user = User::where("email", $request->email)->first();
+        $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Auth::attempt($request->only("email", "password"))) {
-            return response()->json(["message" => "Invalid credentials"], 401);
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
         if (!$user->is_verified) {
+            // توليد كود تحقق جديد
             $code = rand(100000, 999999);
             $user->email_verification_code = $code;
             $user->save();
@@ -62,48 +62,48 @@ class AuthController extends Controller
             Mail::to($user->email)->send(new VerificationCodeMail($code));
 
             return response()->json([
-                "message" => "Verification code sent to your email",
-                "requires_verification" => true
-            ]);
+                'message' => 'Your account is not verified. Verification code sent to email.',
+                'requires_verification' => true
+            ], 403);
         }
 
-        $token = $user->createToken("API Token")->plainTextToken;
+        $token = $user->createToken('API Token')->plainTextToken;
 
         return response()->json([
-            "message" => "Login successful",
-            "access_token" => $token,
-            "token_type" => "Bearer"
+            'message' => 'Login successful',
+            'access_token' => $token,
+            'token_type' => 'Bearer'
         ]);
     }
 
-    // --------- VERIFY EMAIL -------------------------
+    // ------------------------- VERIFY EMAIL -------------------------
     public function verifyEmail(Request $request)
     {
         $request->validate([
-            "email" => "required|email",
-            "code" => "required|numeric"
+            'email' => 'required|email',
+            'code' => 'required|numeric',
         ]);
 
-        $user = User::where("email", $request->email)->first();
+        $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return response()->json(["message" => "User not found"], 404);
+            return response()->json(['message' => 'User not found'], 404);
         }
 
         if ($user->email_verification_code != $request->code) {
-            return response()->json(["message" => "Invalid verification code"], 400);
+            return response()->json(['message' => 'Invalid verification code'], 400);
         }
 
         $user->is_verified = true;
         $user->email_verification_code = null;
         $user->save();
 
-        $token = $user->createToken("API Token")->plainTextToken;
+        $token = $user->createToken('API Token')->plainTextToken;
 
         return response()->json([
-            "message" => "Email verified successfully",
-            "access_token" => $token,
-            "token_type" => "Bearer"
+            'message' => 'Email verified successfully',
+            'access_token' => $token,
+            'token_type' => 'Bearer'
         ]);
     }
 }

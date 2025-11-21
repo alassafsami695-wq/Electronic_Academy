@@ -1,12 +1,11 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\PathController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Teacher\CourseController;
 use App\Http\Controllers\Api\Teacher\LessonController;
-use App\Http\Controllers\Api\PathController;
 
 // ------------------------- PATHS -------------------------
 Route::get('/paths', [PathController::class, 'index']);

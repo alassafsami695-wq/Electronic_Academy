@@ -16,6 +16,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    // الحقول القابلة للملء
     protected $fillable = [
         'name',
         'email',
@@ -23,51 +24,66 @@ class User extends Authenticatable
         'role_id',
         'email_verification_code',
         'is_email_verified',
-        'is_super_admin'
+        'is_super_admin',
     ];
 
+    // الحقول المخفية
     protected $hidden = [
         'password',
         'remember_token',
-        'email_verification_code'
+        'email_verification_code',
     ];
 
+    // التحويلات (casts)
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_super_admin' => 'boolean',
     ];
 
-    // العلاقة مع الدور
+    /**
+     * العلاقة مع الدور
+     */
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
 
-    // علاقة المحفظة
+    /**
+     * علاقة المحفظة
+     */
     public function wallet(): HasOne
     {
         return $this->hasOne(Wallet::class);
     }
 
-    // الكورسات التي يدرسها
+    /**
+     * الكورسات التي يدرسها المستخدم
+     */
     public function courses()
     {
         return $this->hasMany(Course::class, 'teacher_id');
     }
 
-    // الكورسات التي يشترك بها
-    public function enrolledCourses()
+    /**
+     * الكورسات التي يشترك بها المستخدم
+     */
+    public function enrolledCourses(): BelongsToMany
     {
-        return $this->belongsToMany(Course::class, 'course_user')->withTimestamps();
+        return $this->belongsToMany(Course::class, 'course_user')
+                    ->withTimestamps();
     }
 
-    // التعليقات التي كتبها
+    /**
+     * التعليقات التي كتبها المستخدم
+     */
     public function comments()
     {
         return $this->hasMany(Comment::class);
     }
 
-    // الدروس المكتملة
+    /**
+     * الدروس المكتملة
+     */
     public function completedLessons(): BelongsToMany
     {
         return $this->belongsToMany(Lesson::class, 'lesson_completion')
@@ -75,15 +91,20 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
-    // تحقق إذا كان Admin
+    /**
+     * تحقق إذا كان المستخدم Admin
+     */
     public function isAdmin(): bool
     {
-        return $this->role?->name === 'admin' || $this->is_super_admin;
+        // نتحقق أولاً من is_super_admin ثم من role
+        return $this->is_super_admin || ($this->role && $this->role->name === 'admin');
     }
 
-    // تحقق إذا كان Teacher
+    /**
+     * تحقق إذا كان المستخدم Teacher
+     */
     public function isTeacher(): bool
     {
-        return $this->role?->name === 'teacher';
+        return $this->role && $this->role->name === 'teacher';
     }
 }

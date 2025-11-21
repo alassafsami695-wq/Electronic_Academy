@@ -6,13 +6,7 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
 {
-    /**
-     * Global HTTP middleware stack.
-     *
-     * These middleware are run during every request to your application.
-     */
     protected $middleware = [
-        // Default Laravel middleware
         \App\Http\Middleware\TrustProxies::class,
         \Fruitcake\Cors\HandleCors::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
@@ -21,9 +15,6 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
     ];
 
-    /**
-     * The application's route middleware groups.
-     */
     protected $middlewareGroups = [
         'web' => [
             \App\Http\Middleware\EncryptCookies::class,
@@ -35,20 +26,15 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        'throttle:api',
-        \Illuminate\Routing\Middleware\SubstituteBindings::class,
-    ],
-
-
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            'throttle:api',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ],
     ];
 
-    /**
-     * Route middleware.
-     *
-     * These middleware may be assigned to groups or used individually.
-     */
     protected $routeMiddleware = [
+        'is.admin' => \App\Http\Middleware\IsAdmin::class,
+        'is.teacher' => \App\Http\Middleware\IsTeacher::class,
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
@@ -61,7 +47,6 @@ class Kernel extends HttpKernel
 
         // Custom middleware
         'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        'is.admin' => \App\Http\Middleware\IsAdmin::class,
-        'is.teacher' => \App\Http\Middleware\IsTeacher::class,
+
     ];
 }
