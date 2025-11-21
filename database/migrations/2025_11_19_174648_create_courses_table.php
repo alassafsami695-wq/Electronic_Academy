@@ -20,6 +20,8 @@ return new class extends Migration
 
             // اختياري: منع وجود دورات بنفس الاسم لنفس المدرس
             $table->unique(['teacher_id', 'title']);
+            //$table->json('tips')->nullable();
+
         });
     }
 

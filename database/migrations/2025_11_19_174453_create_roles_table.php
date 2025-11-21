@@ -18,9 +18,9 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('role_id')->nullable()->constrained('roles')->onDelete('set null');
-        });
+        // Schema::table('users', function (Blueprint $table) {
+        //     $table->foreignId('role_id')->nullable()->constrained('roles')->onDelete('set null');
+        // });
 
         // إضافة القيم الافتراضية
         DB::table('roles')->insert([

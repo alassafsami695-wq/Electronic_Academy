@@ -9,91 +9,79 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\Lesson;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * الحقول القابلة للكتابة جماعياً
-     */
-     protected $fillable = [
+    protected $fillable = [
         'name',
         'email',
         'password',
-        'role',
+        'role_id',
         'email_verification_code',
-        'is_email_verified'
+        'is_email_verified',
+        'is_super_admin'
     ];
 
-    /**
-     * الحقول المخفية عند تحويل الموديل إلى JSON
-     */
     protected $hidden = [
         'password',
         'remember_token',
         'email_verification_code'
     ];
 
-    /**
-     * الحقول التي يجب تحويلها إلى أنواع محددة
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_super_admin' => 'boolean',
     ];
 
-    /**
-     * علاقة المستخدم مع الدور
-     */
+    // العلاقة مع الدور
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
 
-    /**
-     * علاقة المستخدم مع محفظته
-     */
+    // علاقة المحفظة
     public function wallet(): HasOne
     {
         return $this->hasOne(Wallet::class);
     }
 
-    /**
-     * علاقة المستخدم مع الكورسات التي يدرسها (إذا هو teacher)
-     */
+    // الكورسات التي يدرسها
     public function courses()
     {
         return $this->hasMany(Course::class, 'teacher_id');
     }
 
-    /**
-     * علاقة المستخدم مع الكورسات التي يشترك بها
-     */
+    // الكورسات التي يشترك بها
     public function enrolledCourses()
     {
-        return $this->belongsToMany(Course::class, 'course_user');
+        return $this->belongsToMany(Course::class, 'course_user')->withTimestamps();
     }
 
-    /**
-     * علاقة المستخدم مع التعليقات التي كتبها
-     */
+    // التعليقات التي كتبها
     public function comments()
     {
         return $this->hasMany(Comment::class);
     }
 
-    /**
-     * تحقق إذا كان المستخدم دور Admin
-     */
+    // الدروس المكتملة
+    public function completedLessons(): BelongsToMany
+    {
+        return $this->belongsToMany(Lesson::class, 'lesson_completion')
+                    ->withPivot('completed_at')
+                    ->withTimestamps();
+    }
+
+    // تحقق إذا كان Admin
     public function isAdmin(): bool
     {
         return $this->role?->name === 'admin' || $this->is_super_admin;
     }
 
-    /**
-     * تحقق إذا كان المستخدم دور Teacher
-     */
+    // تحقق إذا كان Teacher
     public function isTeacher(): bool
     {
         return $this->role?->name === 'teacher';

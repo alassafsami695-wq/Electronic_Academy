@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('paths', function (Blueprint $table) {
             $table->id();
-            $table->string('title')->unique(); // إضافة unique لتجنب العناوين المكررة
-            $table->text('description')->nullable();
+            $table->string('title')->unique(); // عنوان المسار
+            $table->text('description')->nullable(); // وصف المسار
+            $table->json('tips')->nullable(); // نصائح بصيغة JSON
             $table->timestamps();
         });
     }

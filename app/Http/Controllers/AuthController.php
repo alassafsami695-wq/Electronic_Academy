@@ -1,14 +1,46 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\VerificationCodeMail;
 
 class AuthController extends Controller
 {
+    // -------------- REGISTER ----------------
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            'is_verified' => false,
+        ]);
+
+        // توليد كود التحقق
+        $code = rand(100000, 999999);
+        $user->email_verification_code = $code;
+        $user->save();
+
+        // إرسال الإيميل
+        Mail::to($user->email)->send(new VerificationCodeMail($code));
+
+        return response()->json([
+            'message' => 'User registered successfully. Verification code sent to email.'
+        ]);
+    }
+
+    // ------- LOGIN --------
     public function login(Request $request)
     {
         $request->validate([
@@ -16,59 +48,62 @@ class AuthController extends Controller
             "password" => "required"
         ]);
 
-        if (!Auth::attempt($request->only("email", "password"))) {
+        $user = User::where("email", $request->email)->first();
+
+        if (!$user || !Auth::attempt($request->only("email", "password"))) {
             return response()->json(["message" => "Invalid credentials"], 401);
         }
 
-        $user = Auth::user();
-
-        if (!$user->is_email_verified) {
-
-            // توليد كود تحقق من 6 أرقام
+        if (!$user->is_verified) {
             $code = rand(100000, 999999);
-
             $user->email_verification_code = $code;
             $user->save();
 
-            // إرسال الإيميل
-            Mail::send("emails.verification_code", ["user" => $user], function ($message) use ($user) {
-                $message->to($user->email)
-                        ->subject("Your Verification Code");
-            });
+            Mail::to($user->email)->send(new VerificationCodeMail($code));
 
             return response()->json([
                 "message" => "Verification code sent to your email",
-                "need_verification" => true
+                "requires_verification" => true
             ]);
         }
 
+        $token = $user->createToken("API Token")->plainTextToken;
+
         return response()->json([
             "message" => "Login successful",
-            "token" => $user->createToken("api_token")->plainTextToken
+            "access_token" => $token,
+            "token_type" => "Bearer"
         ]);
     }
 
-
+    // --------- VERIFY EMAIL -------------------------
     public function verifyEmail(Request $request)
     {
         $request->validate([
             "email" => "required|email",
-            "code" => "required"
+            "code" => "required|numeric"
         ]);
 
         $user = User::where("email", $request->email)->first();
 
-        if (!$user || $user->email_verification_code != $request->code) {
+        if (!$user) {
+            return response()->json(["message" => "User not found"], 404);
+        }
+
+        if ($user->email_verification_code != $request->code) {
             return response()->json(["message" => "Invalid verification code"], 400);
         }
 
-        $user->is_email_verified = true;
+        $user->is_verified = true;
         $user->email_verification_code = null;
         $user->save();
 
+        $token = $user->createToken("API Token")->plainTextToken;
+
         return response()->json([
             "message" => "Email verified successfully",
-            "token" => $user->createToken("api_token")->plainTextToken
+            "access_token" => $token,
+            "token_type" => "Bearer"
         ]);
     }
 }
