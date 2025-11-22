@@ -59,7 +59,10 @@ class UserController extends Controller
             'role_id' => $teacherRole->id,
         ]);
 
-        return response()->json(['message' => 'Teacher account created successfully', 'user' => $user], 201);
+        return response()->json([
+            'message' => 'Teacher account created successfully',
+            'user' => $user
+        ], 201);
     }
 
     public function getMyCourses()
@@ -79,4 +82,6 @@ class UserController extends Controller
 
         return response()->json($coursesWithProgress);
     }
+
+   
 }

@@ -16,6 +16,10 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 
+// ------------------------Logout------------------------------ 
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
+
+
 // ------------------------- ADMIN ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.admin'])->prefix('admin')->group(function () {
     Route::post('users/teacher', [UserController::class, 'storeTeacher']);

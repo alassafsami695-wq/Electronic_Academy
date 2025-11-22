@@ -106,4 +106,27 @@ class AuthController extends Controller
             'token_type' => 'Bearer'
         ]);
     }
+     /**
+     * 🔐 تسجيل الخروج (Logout)
+     */
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logged out successfully'
+        ]);
+    }
+
+    /**
+     * 🔐 تسجيل خروج من كل الأجهزة
+     */
+    public function logoutAllDevices(Request $request)
+    {
+        $request->user()->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Logged out from all devices successfully'
+        ]);
+    }
 }
