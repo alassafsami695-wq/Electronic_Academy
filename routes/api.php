@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PathController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Teacher\CourseController;
@@ -16,9 +16,8 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 
-// ------------------------Logout------------------------------ 
+// ------------------------- LOGOUT -------------------------
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
-
 
 // ------------------------- ADMIN ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.admin'])->prefix('admin')->group(function () {

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             
             if (!Schema::hasColumn('users', 'email_verification_code')) {
-                $table->string('email_verification_code')->nullable();
+               // $table->string('email_verification_code')->nullable();
             }
         });
     }
@@ -25,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('email_verification_code');
+           // $table->dropColumn('email_verification_code');
         });
     }
 };
