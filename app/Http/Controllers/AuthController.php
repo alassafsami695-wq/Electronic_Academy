@@ -5,13 +5,20 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerificationCodeMail;
+use Laravel\Sanctum\HasApiTokens;
 
 class AuthController extends Controller
 {
-    // ------------------------- REGISTER -------------------------
+        use HasApiTokens, Notifiable;
+    /**
+     * -------------------------
+     * REGISTER
+     * -------------------------
+     */
     public function register(Request $request)
     {
         $request->validate([
@@ -27,11 +34,12 @@ class AuthController extends Controller
             'is_verified' => false,
         ]);
 
-        // إنشاء كود تحقق وإرساله بالبريد
+        // إنشاء كود تحقق
         $code = rand(100000, 999999);
         $user->email_verification_code = $code;
         $user->save();
 
+        // إرسال الكود إلى البريد
         Mail::to($user->email)->send(new VerificationCodeMail($code));
 
         return response()->json([
@@ -39,7 +47,11 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // ------------------------- LOGIN -------------------------
+    /**
+     * -------------------------
+     * LOGIN
+     * -------------------------
+     */
     public function login(Request $request)
     {
         $request->validate([
@@ -54,7 +66,7 @@ class AuthController extends Controller
         }
 
         if (!$user->is_verified) {
-            // توليد كود تحقق جديد
+            // لو الحساب غير مفعّل أرسل له كود جديد
             $code = rand(100000, 999999);
             $user->email_verification_code = $code;
             $user->save();
@@ -67,6 +79,7 @@ class AuthController extends Controller
             ], 403);
         }
 
+        // إنشاء التوكن
         $token = $user->createToken('API Token')->plainTextToken;
 
         return response()->json([
@@ -76,7 +89,11 @@ class AuthController extends Controller
         ]);
     }
 
-    // ------------------------- VERIFY EMAIL -------------------------
+    /**
+     * -------------------------
+     * VERIFY EMAIL
+     * -------------------------
+     */
     public function verifyEmail(Request $request)
     {
         $request->validate([
@@ -98,6 +115,7 @@ class AuthController extends Controller
         $user->email_verification_code = null;
         $user->save();
 
+        // إنشاء توكن بعد التفعيل
         $token = $user->createToken('API Token')->plainTextToken;
 
         return response()->json([
@@ -106,8 +124,11 @@ class AuthController extends Controller
             'token_type' => 'Bearer'
         ]);
     }
-     /**
-     * 🔐 تسجيل الخروج (Logout)
+
+    /**
+     * -------------------------
+     * LOGOUT (حذف توكن واحد)
+     * -------------------------
      */
     public function logout(Request $request)
     {
@@ -119,7 +140,9 @@ class AuthController extends Controller
     }
 
     /**
-     * 🔐 تسجيل خروج من كل الأجهزة
+     * -------------------------
+     * LOGOUT FROM ALL DEVICES
+     * -------------------------
      */
     public function logoutAllDevices(Request $request)
     {

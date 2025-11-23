@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\HasApiTokens;
 
 class UserController extends Controller
 {
