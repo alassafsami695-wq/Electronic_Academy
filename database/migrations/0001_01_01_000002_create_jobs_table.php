@@ -19,6 +19,9 @@ return new class extends Migration
             $table->unsignedInteger('reserved_at')->nullable();
             $table->unsignedInteger('available_at');
             $table->unsignedInteger('created_at');
+            $table->string('title');
+            $table->text('description');
+            $table->decimal('salary', 10, 2)->nullable();
         });
 
         Schema::create('job_batches', function (Blueprint $table) {
