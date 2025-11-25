@@ -11,7 +11,6 @@ class IsTeacher
     {
         $user = auth()->user();
 
-        // تحقق من أن المستخدم موجود ودوره teacher
         if (!$user || $user->role !== 'teacher') {
             return response()->json([
                 'message' => 'Forbidden: Teachers only.'

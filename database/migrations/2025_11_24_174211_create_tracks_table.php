@@ -8,11 +8,12 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('tracks', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique(); // Backend / Frontend / AI
-            $table->json('tips');             // مصفوفة نصائح محفوظة كـ JSON
+            $table->string('name')->unique();
+            $table->json('tips')->nullable();
             $table->timestamps();
         });
     }
+
     public function down(): void {
         Schema::dropIfExists('tracks');
     }

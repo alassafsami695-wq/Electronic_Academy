@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->boolean('is_super_admin')->default(false)->after('role_id'); // إضافة بعد عمود role_id لمزيد من الوضوح
+           // $table->boolean('is_super_admin')->default(false)->after('role_id'); // إضافة بعد عمود role_id لمزيد من الوضوح
         });
     }
 

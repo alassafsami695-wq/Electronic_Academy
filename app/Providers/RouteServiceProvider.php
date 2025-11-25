@@ -36,14 +36,7 @@ class RouteServiceProvider extends ServiceProvider
                 ->group(base_path('routes/web.php'));
         });
 
-        protected $routeMiddleware = [
-    'auth' => \App\Http\Middleware\Authenticate::class,
-    'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-    'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-    'is.admin' => \App\Http\Middleware\IsAdmin::class,       // أضف هذا إذا لم يكن موجود
-    'is.teacher' => \App\Http\Middleware\IsTeacher::class,   // هذا هو المهم
-    ...
-];
+       
 
     }
 
@@ -54,4 +47,4 @@ class RouteServiceProvider extends ServiceProvider
     {
         //
     }
-}
+}   
