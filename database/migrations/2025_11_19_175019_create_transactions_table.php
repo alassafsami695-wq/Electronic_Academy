@@ -4,23 +4,23 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('wallet_id')->constrained()->onDelete('cascade'); // ربط بالمحفظة
-            $table->enum('type', ['credit', 'debit']); // تم تصحيح النوع
+            $table->foreignId('wallet_id')->constrained()->onDelete('cascade');
+            $table->enum('type', ['credit', 'debit']);
             $table->decimal('amount', 10, 2);
             $table->string('description')->nullable();
-            $table->foreignId('course_id')->nullable()->constrained()->onDelete('set null'); // ربط بالكورس إذا كانت العملية شراء
+            $table->foreignId('course_id')->nullable()->constrained()->onDelete('set null');
             $table->timestamps();
+
+            $table->index('wallet_id');
+            $table->index('course_id');
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('transactions');
     }
 };

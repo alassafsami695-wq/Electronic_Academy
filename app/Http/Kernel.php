@@ -33,8 +33,8 @@ class Kernel extends HttpKernel
     ];
 
     protected $routeMiddleware = [
-        'is.admin' => \App\Http\Middleware\IsAdmin::class,
-        'is.teacher' => \App\Http\Middleware\IsTeacher::class,
+        'isAdmin' => \App\Http\Middleware\IsAdmin::class,
+        'IsTeacher' => \App\Http\Middleware\IsTeacher::class,
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
@@ -45,16 +45,8 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-        // Custom middleware
         'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
 
     ];
-     //protected $routeMiddleware = [
-        //'auth' => \App\Http\Middleware\Authenticate::class,
-        //'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        //'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-       // 'is.admin' => \App\Http\Middleware\IsAdmin::class,       
-        //'is.teacher' => \App\Http\Middleware\IsTeacher::class,   
-        
-       //     ];
+    
 }

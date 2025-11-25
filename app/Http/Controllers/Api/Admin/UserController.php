@@ -18,7 +18,6 @@ class UserController extends Controller
 
     public function storeAdmin(Request $request)
     {
-        // Gate للتأكد من أن الأدمن الحالي يملك صلاحية إنشاء أدمن جديد
         $this->authorize('createAdmin', User::class);
 
         $request->validate([

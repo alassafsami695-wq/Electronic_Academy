@@ -4,31 +4,21 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::table('users', function (Blueprint $table) {
-            // إضافة العمود بعد الإنشاء الأساسي
-            $table->foreignId('role_id')
-                ->nullable()
-                ->constrained('roles')
-                ->nullOnDelete(); // بديل onDelete('set null')
+            // 🔗 إضافة العمود وربطه بجدول roles
+            if (!Schema::hasColumn('users', 'role_id')) {
+                $table->foreignId('role_id')->nullable()->constrained('roles')->nullOnDelete();
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
+    public function down(): void {
         Schema::table('users', function (Blueprint $table) {
-            // إزالة المفتاح الأجنبي أولاً
-            $table->dropForeign(['role_id']);
-            $table->dropColumn('role_id');
+            if (Schema::hasColumn('users', 'role_id')) {
+                $table->dropConstrainedForeignId('role_id');
+            }
         });
     }
 };

@@ -27,13 +27,13 @@ Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
 // ------------------------- ADMIN ROUTES -------------------------
-Route::middleware(['auth:sanctum','is.admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum','isAdmin'])->prefix('admin')->group(function () {
     Route::post('users/teacher', [UserController::class, 'storeTeacher']);
     Route::post('users/admin', [UserController::class, 'storeAdmin']);
 });
 
 // ------------------------- TEACHER ROUTES -------------------------
-Route::middleware(['auth:sanctum','is.teacher'])->prefix('teacher')->group(function () {
+Route::middleware(['auth:sanctum','isTeacher'])->prefix('teacher')->group(function () {
     // Courses
     Route::get('courses', [CourseController::class, 'index']);
     Route::get('courses/{course}', [CourseController::class, 'show']);
