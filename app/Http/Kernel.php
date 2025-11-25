@@ -48,5 +48,9 @@ class Kernel extends HttpKernel
         // Custom middleware
         'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
 
+
+        'is.admin' => \App\Http\Middleware\IsAdmin::class,
+        'is.teacher' => \App\Http\Middleware\IsTeacher::class,
+
     ];
 }

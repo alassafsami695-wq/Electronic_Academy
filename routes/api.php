@@ -27,9 +27,9 @@ Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
 // ------------------------- ADMIN ROUTES -------------------------
-Route::middleware(['auth:sanctum','is.admin'])->prefix('admin')->group(function () {
-    Route::post('users/teacher', [UserController::class, 'storeTeacher']);
-    Route::post('users/admin', [UserController::class, 'storeAdmin']);
+Route::middleware(['auth:sanctum','is.admin'])->group(function () {
+    Route::post('/users/teacher', [UserController::class, 'storeTeacher']);
+    Route::post('/users/admin', [UserController::class, 'storeAdmin']);
 });
 
 // ------------------------- TEACHER ROUTES -------------------------
