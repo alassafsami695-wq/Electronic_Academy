@@ -46,22 +46,23 @@ class PathController extends Controller
     public function update(Request $request, Path $path)
     {
         $request->validate([
-            'title'        => 'required|string|max:255|unique:paths,title,' . $path->id,
-            'description' => 'nullable|string',
-            'tips'        => 'nullable|array',
+            'title'       => 'sometimes|string|max:255|unique:paths,title,' . $path->id,
+            'description' => 'sometimes|string|nullable',
+            'tips'        => 'sometimes|array|nullable',
         ]);
 
-        $path->update([
-            'title'        => $request->title,
-            'description' => $request->description,
-            'tips'        => $request->tips,
-        ]);
+        $path->update($request->only([
+            'title',
+            'description',
+            'tips',
+        ]));
 
         return response()->json([
             'message' => 'Path updated successfully',
             'data'    => $path
         ]);
     }
+
 
   
     public function destroy(Path $path)
