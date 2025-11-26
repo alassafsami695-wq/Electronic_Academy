@@ -30,6 +30,12 @@ Route::middleware(['auth:sanctum','is.Admin'])->prefix('admin')->group(function 
 
 // ------------------------- TEACHER ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(function () {
+
+
+    // paths 
+    Route::post('paths', [PathController::class, 'store']);
+    Route::put('paths/{path}', [PathController::class, 'update']);
+    
     // Courses
     Route::get('courses', [CourseController::class, 'index']);
     Route::get('courses/{course}', [CourseController::class, 'show']);
