@@ -21,6 +21,7 @@ class PathSeeder extends Seeder
                     "استخدم Postman لاختبار واجهاتك"
                 ]),
             ],
+            
             [
                 'title' => 'Frontend Development',
                 'description' => 'Learn client-side development with HTML, CSS, JavaScript, React, and UI frameworks.',
