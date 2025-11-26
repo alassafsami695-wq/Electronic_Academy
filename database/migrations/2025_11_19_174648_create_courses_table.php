@@ -6,20 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
-        Schema::create('courses', function (Blueprint $table) {
+       
+    Schema::create('courses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('path_id')->constrained()->onDelete('cascade');
-            $table->foreignId('teacher_id')->constrained('users')->onDelete('cascade');
             $table->string('title');
-            $table->longText('summary');
-            $table->decimal('price', 8, 2);
-            $table->boolean('is_published')->default(false);
+            $table->text('description')->nullable(); 
+            $table->string('photo')->nullable();
+            $table->decimal('price', 8, 2)->default(0);
+            $table->string('course_duration')->nullable(); 
+            $table->integer('number_of_students')->default(0);
+            $table->float('rating')->default(0);
+            $table->foreignId('teacher_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('path_id')->constrained('paths')->onDelete('cascade');
             $table->timestamps();
+        });   
 
-            $table->unique(['teacher_id', 'title']);
-            $table->index('path_id');
-            $table->index('teacher_id');
-        });
     }
 
     public function down(): void {

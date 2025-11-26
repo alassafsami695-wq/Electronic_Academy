@@ -10,13 +10,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Course extends Model
 {
     protected $fillable = [
-        'path_id',
-        'teacher_id',
-        'title',
-        'summary',
-        'price',
-        'is_published',
+    'title',
+    'description',
+    'photo',
+    'price',
+    'course_duration',
+    'number_of_students',
+    'rating',
+    'teacher_id',
+    'path_id',
     ];
+
 
     /**
      * العلاقة مع المعلم

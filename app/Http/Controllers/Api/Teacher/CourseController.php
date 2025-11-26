@@ -51,24 +51,26 @@ class CourseController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'summary' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'path_id' => 'required|exists:paths,id',
-        ]);
+{
+    $request->validate([
+        'title'             => 'required|string|max:255',
+        'description'       => 'nullable|string',
+        'photo'             => 'nullable|string',
+        'price'             => 'required|numeric|min:0',
+        'course_duration'   => 'nullable|string',
+        'number_of_students'=> 'nullable|integer|min:0',
+        'rating'            => 'nullable|numeric|min:0|max:5',
+        'teacher_id'        => 'required|exists:users,id',
+        'path_id'           => 'required|exists:paths,id',
+    ]);
 
-        $course = Course::create([
-            'title' => $request->title,
-            'summary' => $request->summary,
-            'path_id' => $request->path_id,
-            'teacher_id' => auth()->id(),
-            'is_published' => false,
-        ]);
+    $course = Course::create($request->all());
 
-        return redirect()->route('teacher.courses.index')->with('success', 'تم إضافة الكورس بنجاح');
-    }
+    return response()->json([
+        'message' => 'Course created successfully',
+        'data'    => $course
+    ], 201);
+}
 
     public function update(Request $request, Course $course)
     {
@@ -80,7 +82,7 @@ class CourseController extends Controller
             'price' => 'sometimes|required|numeric|min:0',
             'path_id' => 'sometimes|required|exists:paths,id',
             'is_published' => 'sometimes|boolean',
-        ]);
+             ]);
 
         $course->update($data);
 
