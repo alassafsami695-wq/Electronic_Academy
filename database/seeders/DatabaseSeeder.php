@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PathSeeder::class,
             UserSeeder::class,
-            TrackSeeder::class,
+          //  TrackSeeder::class,
         ]);
     }
 }

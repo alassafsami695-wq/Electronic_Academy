@@ -12,11 +12,7 @@ use App\Http\Controllers\Api\TrackController;
 // ------------------------- PATHS -------------------------
 Route::get('/paths', [PathController::class, 'index']);
 Route::get('/paths/{path}', [PathController::class, 'show']);
-
-// ------------------------- TRACKS -------------------------
-Route::get('/tracks', [TrackController::class, 'index']);          
-Route::get('/tracks/{name}', [TrackController::class, 'show']);   
-Route::post('/tracks', [TrackController::class, 'store']);        
+   
 
 // ------------------------- AUTH -------------------------
 Route::post('/register', [AuthController::class, 'register']);
