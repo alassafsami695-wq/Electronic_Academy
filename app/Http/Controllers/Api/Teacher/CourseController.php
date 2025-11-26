@@ -13,12 +13,11 @@ class CourseController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('is.teacher'); // تأكد أن هذا الميدلوير موجود
+        $this->middleware('is.Teacher'); 
     }
 
     public function index(Request $request)
     {
-        // إذا يريد عرض صفحات الويب (view) مع البحث
         $query = Course::query()->where('is_published', true);
 
         if ($request->filled('search')) {
@@ -29,7 +28,6 @@ class CourseController extends Controller
             $query->where('path_id', $request->path_id);
         }
 
-        // إذا طلب صفحة HTML (مثلاً من متصفح) نعرض view وإلا نرجع JSON
         if ($request->wantsJson()) {
             $courses = $query->with('path', 'teacher')->paginate(10);
             return response()->json($courses);
@@ -76,7 +74,6 @@ class CourseController extends Controller
     {
         $this->authorize('update', $course);
 
-        // استخدام validate بدلاً من $request->validated() إن لم تكن تستخدم FormRequest
         $data = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'summary' => 'sometimes|required|string',

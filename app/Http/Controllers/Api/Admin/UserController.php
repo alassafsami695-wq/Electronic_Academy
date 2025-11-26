@@ -13,12 +13,12 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware('auth:sanctum');
-        $this->middleware('is.admin');
+        $this->middleware('is.Admin');
     }
 
     public function storeAdmin(Request $request)
     {
-        $this->authorize('createAdmin', User::class);
+       // $this->authorize('createAdmin', User::class);
 
         $request->validate([
             'name' => 'required|string|max:255',
