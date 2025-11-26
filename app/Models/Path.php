@@ -13,6 +13,10 @@ class Path extends Model
         'tips'
     ];
 
+    protected $casts = [
+        'tips' => 'array', // مهم حتى تتحول JSON إلى array تلقائياً
+    ];
+
     public function courses(): HasMany
     {
         return $this->hasMany(Course::class);

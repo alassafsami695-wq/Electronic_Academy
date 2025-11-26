@@ -17,7 +17,7 @@ class PathController extends Controller
 
     public function show(Path $path)
     {
-        $path->tips = json_decode($path->tips); 
+        // $path->tips = json_decode($path->tips); 
         return response()->json($path);
     }
 
@@ -25,13 +25,13 @@ class PathController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'        => 'required|string|max:255|unique:paths,name',
+            'title'        => 'required|string|max:255|unique:paths,title',
             'description' => 'nullable|string',
             'tips'        => 'nullable|array',
         ]);
 
         $path = Path::create([
-            'name'        => $request->name,
+            'title'        => $request->title,
             'description' => $request->description,
             'tips'        => $request->tips, 
         ]);
@@ -46,13 +46,13 @@ class PathController extends Controller
     public function update(Request $request, Path $path)
     {
         $request->validate([
-            'name'        => 'required|string|max:255|unique:paths,name,' . $path->id,
+            'title'        => 'required|string|max:255|unique:paths,title,' . $path->id,
             'description' => 'nullable|string',
             'tips'        => 'nullable|array',
         ]);
 
         $path->update([
-            'name'        => $request->name,
+            'title'        => $request->title,
             'description' => $request->description,
             'tips'        => $request->tips,
         ]);

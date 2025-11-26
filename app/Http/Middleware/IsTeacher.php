@@ -11,7 +11,7 @@ class IsTeacher
     {
         $user = auth()->user();
 
-        if (!$user || $user->role !== 'teacher') {
+        if (!$user || $user->role_id !== 2 ) {
             return response()->json([
                 'message' => 'Forbidden: Teachers only.'
             ], 403);
