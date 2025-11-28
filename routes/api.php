@@ -7,16 +7,14 @@ use App\Http\Controllers\Api\JobController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Teacher\CourseController;
 use App\Http\Controllers\Api\Teacher\LessonController;
-use App\Http\Controllers\Api\TrackController;
 
 // ------------------------- PATHS -------------------------
 Route::get('/paths', [PathController::class, 'index']);
 Route::get('/paths/{path}', [PathController::class, 'show']);
-   
 
 // ------------------------- AUTH -------------------------
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->name('login'); 
 Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 
 // ------------------------- LOGOUT -------------------------
@@ -24,15 +22,35 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 
 // ------------------------- ADMIN ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.Admin'])->prefix('admin')->group(function () {
-    Route::post('users/teacher', [UserController::class, 'storeTeacher']);
-    Route::post('users/admin', [UserController::class, 'storeAdmin']);
+    // إدارة الطلاب
+    Route::post('students', [UserController::class, 'storeStudent']);
+    Route::put('students/{student}', [UserController::class, 'updateStudent']);
+    Route::delete('students/{student}', [UserController::class, 'destroyStudent']);
+
+    // إدارة الأساتذة
+    Route::post('teachers', [UserController::class, 'storeTeacher']);
+    Route::put('teachers/{teacher}', [UserController::class, 'updateTeacher']);
+    Route::delete('teachers/{teacher}', [UserController::class, 'destroyTeacher']);
+
+    // إدارة الأدمن
+    Route::post('admins', [UserController::class, 'storeAdmin']);
+
+    // كورسات الأستاذ
+    Route::get('teachers/{teacher}/courses', [UserController::class, 'teacherCourses']);
+    Route::delete('courses/{course}', [UserController::class, 'destroyCourse']);
+
+    // إدارة المسارات
+    Route::post('paths', [UserController::class, 'storePath']);
+    Route::put('paths/{path}', [UserController::class, 'updatePath']);
+    Route::delete('paths/{path}', [UserController::class, 'destroyPath']);
+
+    // إدارة التعليقات
+    Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
 });
 
 // ------------------------- TEACHER ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(function () {
-
-
-    // paths 
+    // Paths
     Route::post('paths', [PathController::class, 'store']);
     Route::put('paths/{path}', [PathController::class, 'update']);
 
@@ -51,9 +69,9 @@ Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(funct
 
 // ------------------------- JOB ROUTES -------------------------
 Route::prefix('jobs')->group(function () {
-    Route::get('/', [JobController::class, 'index']);  
-    Route::get('/{job}', [JobController::class, 'show']);      
-    Route::post('/', [JobController::class, 'store']);         
-    Route::put('/{job}', [JobController::class, 'update']);    
-    Route::delete('/{job}', [JobController::class, 'destroy']); 
+    Route::get('/', [JobController::class, 'index']);
+    Route::get('/{job}', [JobController::class, 'show']);
+    Route::post('/', [JobController::class, 'store']);
+    Route::put('/{job}', [JobController::class, 'update']);
+    Route::delete('/{job}', [JobController::class, 'destroy']);
 });

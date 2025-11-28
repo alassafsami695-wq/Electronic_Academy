@@ -6,19 +6,19 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Models\Path;
-use Illuminate\View\View;
 
 class CourseController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth:sanctum');
         $this->middleware('is.Teacher'); 
     }
 
+   
     public function index(Request $request)
     {
-        $query = Course::query()->where('is_published', true);
+        $query = Course::query()->with('teacher', 'path');
 
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
@@ -28,72 +28,108 @@ class CourseController extends Controller
             $query->where('path_id', $request->path_id);
         }
 
-        if ($request->wantsJson()) {
-            $courses = $query->with('path', 'teacher')->paginate(10);
-            return response()->json($courses);
-        }
+        $courses = $query->paginate(10);
 
-        $courses = $query->with('path', 'teacher')->paginate(10);
-        $paths = Path::all();
-
-        return view('courses.index', compact('courses', 'paths'));
+        return response()->json([
+            'data' => $courses->map(function ($course) {
+                return [
+                    'id' => $course->id,
+                    'title' => $course->title,
+                    'description' => $course->description,
+                    'photo' => $course->photo,
+                    'price' => $course->price,
+                    'course_duration' => $course->course_duration,
+                    'number_of_students' => $course->number_of_students,
+                    'teacher_name' => $course->teacher->name ?? null,
+                    'path_title' => $course->path->title ?? null,
+                ];
+            }),
+            'pagination' => [
+                'current_page' => $courses->currentPage(),
+                'last_page' => $courses->lastPage(),
+                'total' => $courses->total(),
+            ]
+        ]);
     }
 
+ 
     public function show(Course $course)
     {
-        $this->authorize('update', $course);
-        return response()->json($course->load('lessons'));
+        return response()->json([
+            'id' => $course->id,
+            'title' => $course->title,
+            'description' => $course->description,
+            'photo' => $course->photo,
+            'price' => $course->price,
+            'course_duration' => $course->course_duration,
+            'number_of_students' => $course->number_of_students,
+            'teacher_name' => $course->teacher->name ?? null,
+            'path_title' => $course->path->title ?? null,
+            'lessons' => $course->lessons,
+        ]);
     }
 
-    public function create()
-    {
-        return view('teacher.courses.create');
-    }
-
+  
     public function store(Request $request)
-{
-    $request->validate([
-        'title'             => 'required|string|max:255',
-        'description'       => 'nullable|string',
-        'photo'             => 'nullable|string',
-        'price'             => 'required|numeric|min:0',
-        'course_duration'   => 'nullable|string',
-        'number_of_students'=> 'nullable|integer|min:0',
-        'rating'            => 'nullable|numeric|min:0|max:5',
-        'teacher_id'        => 'required|exists:users,id',
-        'path_id'           => 'required|exists:paths,id',
-    ]);
+    {
+        $request->validate([
+            'title'             => 'required|string|max:255',
+            'description'       => 'nullable|string',
+            'photo'             => 'nullable|string',
+            'price'             => 'required|numeric|min:0',
+            'course_duration'   => 'nullable|string',
+            'number_of_students'=> 'nullable|integer|min:0',
+            'rating'            => 'nullable|numeric|min:0|max:5',
+            'teacher_id'        => 'required|exists:users,id',
+            'path_id'           => 'required|exists:paths,id',
+        ]);
 
-    $course = Course::create($request->all());
+        $course = Course::create($request->only([
+            'title',
+            'description',
+            'photo',
+            'price',
+            'course_duration',
+            'number_of_students',
+            'rating',
+            'teacher_id',
+            'path_id',
+        ]));
 
-    return response()->json([
-        'message' => 'Course created successfully',
-        'data'    => $course
-    ], 201);
-}
+        return response()->json([
+            'message' => 'Course created successfully',
+            'data'    => $course->load('teacher', 'path')
+        ], 201);
+    }
 
+    
     public function update(Request $request, Course $course)
     {
-        $this->authorize('update', $course);
-
         $data = $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'summary' => 'sometimes|required|string',
-            'price' => 'sometimes|required|numeric|min:0',
-            'path_id' => 'sometimes|required|exists:paths,id',
-            'is_published' => 'sometimes|boolean',
-             ]);
+            'title'             => 'sometimes|required|string|max:255',
+            'description'       => 'nullable|string',
+            'photo'             => 'nullable|string',
+            'price'             => 'sometimes|required|numeric|min:0',
+            'course_duration'   => 'nullable|string',
+            'number_of_students'=> 'nullable|integer|min:0',
+            'rating'            => 'nullable|numeric|min:0|max:5',
+            'teacher_id'        => 'sometimes|required|exists:users,id',
+            'path_id'           => 'sometimes|required|exists:paths,id',
+            'is_published'      => 'sometimes|boolean',
+        ]);
 
         $course->update($data);
 
-        return response()->json(['message' => 'Course updated successfully', 'course' => $course]);
+        return response()->json([
+            'message' => 'Course updated successfully',
+            'data'    => $course->load('teacher', 'path')
+        ]);
     }
 
+   
     public function destroy(Course $course)
     {
-        $this->authorize('delete', $course);
         $course->delete();
         return response()->json(['message' => 'Course deleted successfully'], 200);
     }
 }
-
