@@ -35,10 +35,7 @@ Route::middleware(['auth:sanctum','is.Admin'])->prefix('admin')->group(function 
     // إدارة الأدمن
     Route::post('admins', [UserController::class, 'storeAdmin']);
 
-    // كورسات الأستاذ
-    Route::get('teachers/{teacher}/courses', [UserController::class, 'teacherCourses']);
-    Route::delete('courses/{course}', [UserController::class, 'destroyCourse']);
-
+    
     // إدارة المسارات
     Route::post('paths', [UserController::class, 'storePath']);
     Route::put('paths/{path}', [UserController::class, 'updatePath']);
@@ -65,6 +62,14 @@ Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(funct
     Route::post('courses/{course}/lessons', [LessonController::class, 'store']);
     Route::put('courses/{course}/lessons/{lesson}', [LessonController::class, 'update']);
     Route::delete('courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy']);
+});
+
+Route::middleware(['auth:sanctum','is.AdminOrTeacher'])->prefix('teacher')->group(function () {
+    
+    // كورسات الأستاذ
+    Route::get('teachers/{teacher}/courses', [UserController::class, 'teacherCourses']);
+    Route::delete('courses/{course}', [UserController::class, 'destroyCourse']);
+
 });
 
 // ------------------------- JOB ROUTES -------------------------
