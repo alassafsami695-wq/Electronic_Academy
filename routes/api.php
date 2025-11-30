@@ -38,10 +38,6 @@ Route::middleware(['auth:sanctum','is.Admin'])->prefix('admin')->group(function 
     Route::put('admins/{admin}', [UserController::class, 'updateAdmin']);
     Route::delete('admins/{admin}', [UserController::class, 'destroyAdmin']);
 
-    // كورسات الأستاذ
-    Route::get('teachers/{teacher}/courses', [UserController::class, 'teacherCourses']);
-    Route::delete('courses/{course}', [UserController::class, 'destroyCourse']);
-
     // إدارة المسارات
     Route::post('paths', [UserController::class, 'storePath']);
     Route::put('paths/{path}', [UserController::class, 'updatePath']);
@@ -69,13 +65,18 @@ Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(funct
     Route::put('courses/{course}/lessons/{lesson}', [LessonController::class, 'update']);
     Route::delete('courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy']);
 });
+Route::middleware(['auth:sanctum','is.AdminOrTeacher'])->group(function () {
+    
+      // كورسات الأستاذ
+    Route::get('teachers/{teacher}/courses', [UserController::class, 'teacherCourses']);
+    Route::delete('courses/{course}', [UserController::class, 'destroyCourse']);
+    
+});
 
-// ------------------------- COMMENTS ROUTES -------------------------
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('comments', [CommentController::class, 'index']); 
     Route::post('comments', [CommentController::class, 'store']); 
 });
-
 // ------------------------- JOB ROUTES -------------------------
 Route::prefix('jobs')->group(function () {
     Route::get('/', [JobController::class, 'index']);
