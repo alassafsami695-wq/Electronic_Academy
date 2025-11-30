@@ -10,33 +10,31 @@ class Comment extends Model
 {
     protected $fillable = ['user_id', 'lesson_id', 'parent_id', 'body'];
 
-    /**
-     * صاحب التعليق
-     */
+
+    //  صاحب التعليق
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * الدرس الذي ينتمي إليه التعليق
-     */
+    // الدرس الذي ينتمي إليه التعليق
+     
     public function lesson(): BelongsTo
     {
         return $this->belongsTo(Lesson::class);
     }
 
-    /**
-     * التعليق الأب إذا كان تعليق رد
-     */
+    
+     // التعليق الاب إذا كان تعليق رد
+     
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Comment::class, 'parent_id');
     }
 
-    /**
-     * الردود على هذا التعليق
-     */
+    
+     // الردود على هذا التعليق
+     
     public function replies(): HasMany
     {
         return $this->hasMany(Comment::class, 'parent_id');

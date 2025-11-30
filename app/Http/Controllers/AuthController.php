@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
-    /**
-     * Register a new user + send numeric verification code
-     */
+    
+     // Register a new user + send numeric verification code
+     
     public function register(Request $request)
     {
         $validatedData = $request->validate([
@@ -48,9 +48,9 @@ class AuthController extends Controller
     }
 
 
-    /**
-     * Login user
-     */
+    
+    // Login user
+     
     public function login(Request $request)
     {
         $request->validate([
@@ -78,9 +78,9 @@ class AuthController extends Controller
     }
 
 
-    /**
-     * Logout user
-     */
+    
+     // Logout user
+     
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
@@ -89,9 +89,9 @@ class AuthController extends Controller
     }
 
 
-    /**
-     * Verify email using numeric code
-     */
+    
+     // Verify email 
+     
     public function verifyEmail(Request $request)
     {
         $request->validate([

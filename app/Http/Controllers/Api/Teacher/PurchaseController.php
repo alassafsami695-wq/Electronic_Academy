@@ -26,7 +26,6 @@ class PurchaseController extends Controller
         }
 
         try {
-            // تأكد من توقيع الدالة debit في WalletService — هنا نفترض (user, amount, description, reference_id)
             $this->walletService->debit(
                 $user,
                 $course->price,

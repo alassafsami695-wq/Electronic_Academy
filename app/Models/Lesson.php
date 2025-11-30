@@ -17,25 +17,25 @@ class Lesson extends Model
         'content',
     ];
 
-    /**
-     * الكورس الذي ينتمي إليه الدرس
-     */
+    
+     //---------------------------------- الكورس الذي ينتمي إليه الدرس-----------------------
+     
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
     }
 
-    /**
-     * التعليقات الأساسية (الأب) للدرس
-     */
+    
+     //------------------------------------ التعليقات الأساسية (الأب) للدرس-----------------------
+     
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class)->whereNull('parent_id')->orderBy('created_at', 'desc');
     }
 
-    /**
-     * جميع التعليقات بدون فلترة (اختياري)
-     */
+    
+     // ----------------------جميع التعليقات بدون فلترة---------------
+     
     public function allComments(): HasMany
     {
         return $this->hasMany(Comment::class)->orderBy('created_at', 'desc');
