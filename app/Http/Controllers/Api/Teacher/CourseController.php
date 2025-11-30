@@ -52,7 +52,7 @@ class CourseController extends Controller
         ]);
     }
 
- 
+   //--------------------------------رؤية كورس معين----------------------- 
     public function show(Course $course)
     {
         return response()->json([
@@ -69,7 +69,7 @@ class CourseController extends Controller
         ]);
     }
 
-  
+    //----------------------------إضافة كورس-----------------------
     public function store(Request $request)
     {
         $request->validate([
@@ -102,7 +102,7 @@ class CourseController extends Controller
         ], 201);
     }
 
-    
+    //----------------------------تعديل كورس--------------------------- 
     public function update(Request $request, Course $course)
     {
         $data = $request->validate([
@@ -126,7 +126,7 @@ class CourseController extends Controller
         ]);
     }
 
-   
+   //------------------------------حذف كورس---------------------- 
     public function destroy(Course $course)
     {
         $course->delete();

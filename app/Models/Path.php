@@ -14,7 +14,7 @@ class Path extends Model
     ];
 
     protected $casts = [
-        'tips' => 'array', // مهم حتى تتحول JSON إلى array تلقائياً
+        'tips' => 'array', //  حتى تتحول JSON إلى array تلقائيا
     ];
 
     public function courses(): HasMany

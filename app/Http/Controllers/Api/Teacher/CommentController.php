@@ -15,9 +15,9 @@ class CommentController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    /**
-     * إعادة تعليقات درس معين (جذرية + الردود).
-     */
+    
+     //--------------------------------- إعادة تعليقات درس معين (جذرية + الردود)---------------------
+     
     public function index(Request $request)
     {
         $request->validate([
@@ -35,9 +35,8 @@ class CommentController extends Controller
         return response()->json($comments);
     }
 
-    /**
-     * تخزين تعليق جديد (أو رد).
-     */
+    // -------------------------تخزين تعليق جديد أو رد-------------------
+     
     public function store(Request $request)
     {
         $request->validate([
@@ -58,7 +57,7 @@ class CommentController extends Controller
             'parent_id' => $request->parent_id,
         ]);
 
-        // إرسال إخطار للمعلم المرتبط بالمحبوب (إن وُجد)
+        // ---------------------------إرسال إخطار للمعلم المرتبط بالكورس------------------ 
         if ($comment->lesson && $comment->lesson->course && $comment->lesson->course->teacher) {
             $teacher = $comment->lesson->course->teacher;
             $teacher->notify(new NewCommentNotification($comment));
