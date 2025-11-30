@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Teacher\CourseController;
 use App\Http\Controllers\Api\Teacher\LessonController;
 use App\Http\Controllers\Api\CommentController;
 
+
 // ------------------------- PATHS -------------------------
 Route::get('/paths', [PathController::class, 'index']);
 Route::get('/paths/{path}', [PathController::class, 'show']);
@@ -38,18 +39,18 @@ Route::middleware(['auth:sanctum','is.Admin'])->prefix('admin')->group(function 
     Route::delete('teachers/{teacher}', [UserController::class, 'destroyUser']);
 
 
-    // إدارة الأدمن
-    Route::post('admins', [UserController::class, 'storeAdmin']);
-    Route::put('admins/{admin}', [UserController::class, 'updateAdmin']);
-    Route::delete('admins/{admin}', [UserController::class, 'destroyUser']);
+    // // إدارة الأدمن
+    // Route::post('admins', [UserController::class, 'storeAdmin']);
+    // Route::put('admins/{admin}', [UserController::class, 'updateAdmin']);
+    // Route::delete('admins/{admin}', [UserController::class, 'destroyUser']);
 
-    // إدارة المسارات
-    Route::post('paths', [UserController::class, 'storePath']);
-    Route::put('paths/{path}', [UserController::class, 'updatePath']);
-    Route::delete('paths/{path}', [UserController::class, 'destroyPath']);
+    // // إدارة المسارات
+    // Route::post('paths', [UserController::class, 'storePath']);
+    // Route::put('paths/{path}', [UserController::class, 'updatePath']);
+    // Route::delete('paths/{path}', [UserController::class, 'destroyPath']);
 
-    // إدارة التعليقات
-    Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
+    // // إدارة التعليقات
+    // Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
 });
 
 // ------------------------- TEACHER ROUTES -------------------------
@@ -58,12 +59,15 @@ Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(funct
     Route::post('paths', [PathController::class, 'store']);
     Route::put('paths/{path}', [PathController::class, 'update']);
 
-    // Courses
-    Route::get('courses', [CourseController::class, 'index']);
-    Route::get('courses/{course}', [CourseController::class, 'show']);
-    Route::post('courses', [CourseController::class, 'store']);
-    Route::put('courses/{course}', [CourseController::class, 'update']);
-    Route::delete('courses/{course}', [CourseController::class, 'destroy']);
+
+    Route::apiResource('courses', CourseController::class);
+
+    // // Courses
+    // Route::get('courses', [CourseController::class, 'index']);
+    // Route::get('courses/{course}', [CourseController::class, 'show']);
+    // Route::post('courses', [CourseController::class, 'store']);
+    // Route::put('courses/{course}', [CourseController::class, 'update']);
+    // Route::delete('courses/{course}', [CourseController::class, 'destroy']);
 
     // Lessons
     Route::post('courses/{course}/lessons', [LessonController::class, 'store']);
