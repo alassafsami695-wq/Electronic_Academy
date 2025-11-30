@@ -9,9 +9,10 @@ class Job extends Model
 {
     use HasFactory;
 
+    //---------------- الحقول القابلة للتعبئة -----------------
     protected $fillable = [
-        'title',
-        'description',
-        'salary',
+        'title',        
+        'description',  
+        'salary',       
     ];
 }

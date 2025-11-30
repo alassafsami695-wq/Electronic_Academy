@@ -7,19 +7,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Path extends Model
 {
+    //---------------- الحقول القابلة للتعبئة -----------------
     protected $fillable = [
-        'title',
-        'description',
-        'tips'
+        'title',       
+        'description', 
+        'tips'         
     ];
 
+    //---------------- التحويلات (Casting) -----------------
     protected $casts = [
-        'tips' => 'array', //  حتى تتحول JSON إلى array تلقائيا
+        'tips' => 'array', // تحويل حقل النصائح من JSON إلى مصفوفة تلقائياً
     ];
 
+    //---------------- العلاقة مع الكورسات -----------------
     public function courses(): HasMany
     {
-        return $this->hasMany(Course::class);
+        return $this->hasMany(Course::class); 
     }
-
 }
