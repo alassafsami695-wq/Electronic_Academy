@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -26,12 +27,14 @@ class AuthController extends Controller
         
         $verificationCode = rand(100000, 999999);
 
-        
+        $studentRole = Role::where('name', 'user')->firstOrFail();
+
         $user = User::create([
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'password' => bcrypt($validatedData['password']),
             'email_verification_code' => $verificationCode,
+            'role_id' => $studentRole->id,
             'is_verified' => false,
         ]);
 

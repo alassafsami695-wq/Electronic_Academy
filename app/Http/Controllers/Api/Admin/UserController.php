@@ -19,6 +19,38 @@ class UserController extends Controller
         $this->middleware('is.Admin');
     }
 
+    // ----------------- قائمة المستخدمين -----------------
+    public function index(Request $request)
+    {
+        $query = User::query();
+
+        // Filter by role name if provided
+        if ($request->has('role')) {
+            $roleName = $request->input('role');
+            $query->whereHas('role', function ($q) use ($roleName) {
+                $q->where('name', $roleName);
+            });
+        }
+
+        $users = $query->with('role', 'wallet')->paginate(15);
+
+        return response()->json([
+            'message' => 'Users retrieved successfully',
+            'data'    => $users
+        ]);
+    }
+
+    // ----------------- عرض مستخدم محدد -----------------
+    public function show(User $user)
+    {
+        $user->load('role', 'wallet');
+
+        return response()->json([
+            'message' => 'User retrieved successfully',
+            'data'    => $user
+        ]);
+    }
+
     // ----------------- إضافة أدمن -----------------
     public function storeAdmin(Request $request)
     {
@@ -62,13 +94,6 @@ class UserController extends Controller
         ]);
     }
 
-    // ----------------- حذف أدمن -----------------
-    public function destroyAdmin(User $admin)
-    {
-        $admin->delete();
-        return response()->json(['message' => 'Admin deleted successfully']);
-    }
-
     // ----------------- إدارة الأساتذة -----------------
     public function storeTeacher(Request $request)
     {
@@ -108,12 +133,6 @@ class UserController extends Controller
             'message' => 'Teacher updated successfully',
             'user'    => $teacher
         ]);
-    }
-
-    public function destroyTeacher(User $teacher)
-    {
-        $teacher->delete();
-        return response()->json(['message' => 'Teacher deleted successfully']);
     }
 
     // ----------------- إدارة الطلاب -----------------
@@ -157,10 +176,10 @@ class UserController extends Controller
         ]);
     }
 
-    public function destroyStudent(User $student)
+    public function destroyUser(User $user)
     {
-        $student->delete();
-        return response()->json(['message' => 'Student deleted successfully']);
+        $user->delete();
+        return response()->json(['message' => 'User deleted successfully']);
     }
 
     // ----------------- كورسات الأستاذ -----------------

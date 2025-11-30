@@ -23,20 +23,25 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 
 // ------------------------- ADMIN ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.Admin'])->prefix('admin')->group(function () {
+    // قائمة المستخدمين
+    Route::get('users', [UserController::class, 'index']);
+    Route::get('users/{user}', [UserController::class, 'show']);
+
     // إدارة الطلاب
     Route::post('students', [UserController::class, 'storeStudent']);
     Route::put('students/{student}', [UserController::class, 'updateStudent']);
-    Route::delete('students/{student}', [UserController::class, 'destroyStudent']);
+    Route::delete('students/{student}', [UserController::class, 'destroyUser']);
 
-    // إدارة الأساتذة
+  
     Route::post('teachers', [UserController::class, 'storeTeacher']);
     Route::put('teachers/{teacher}', [UserController::class, 'updateTeacher']);
-    Route::delete('teachers/{teacher}', [UserController::class, 'destroyTeacher']);
+    Route::delete('teachers/{teacher}', [UserController::class, 'destroyUser']);
+
 
     // إدارة الأدمن
     Route::post('admins', [UserController::class, 'storeAdmin']);
     Route::put('admins/{admin}', [UserController::class, 'updateAdmin']);
-    Route::delete('admins/{admin}', [UserController::class, 'destroyAdmin']);
+    Route::delete('admins/{admin}', [UserController::class, 'destroyUser']);
 
     // إدارة المسارات
     Route::post('paths', [UserController::class, 'storePath']);
