@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Mail;
 class AuthController extends Controller
 {
     
-     // Register a new user + send numeric verification code
+     // --------------------Register a new user + send numeric verification code------------------
      
     public function register(Request $request)
     {
@@ -49,37 +49,46 @@ class AuthController extends Controller
 
 
     
-    // Login user
+    // ------------------------Login user----------------------------------------
      
-    public function login(Request $request)
-    {
-        $request->validate([
-             'email'    => 'required|string|email',
-             'password' => 'required|string',
-        ]);
+public function login(Request $request)
+{
+    $request->validate([
+        'email'    => 'required|string|email',
+        'password' => 'required|string',
+    ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
-        }
+    if (!Auth::attempt($request->only('email', 'password'))) {
+        return response()->json(['message' => 'Invalid credentials'], 401);
+    }
 
-        $user = Auth::user();
+    $user = Auth::user();
 
-        if (!$user->is_verified) {
-            return response()->json(['message' => 'Email not verified'], 403);
-        }
+    if (!$user->is_verified) {
+        return response()->json(['message' => 'Email not verified'], 403);
+    }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'message'      => 'Login successful',
-            'access_token' => $token,
-            'token_type'   => 'Bearer',
+    //-----------------إنشاء أو تحديث المحفظة (إضافة 1000$ عند أول تسجيل دخول فقط)----------------
+    if (!$user->wallet) {
+        $user->wallet()->create([
+            'balance' => 1000
         ]);
     }
 
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'message'      => 'Login successful',
+        'access_token' => $token,
+        'token_type'   => 'Bearer',
+        'user'         => $user->load('wallet'),
+    ], 200);
+}
+
+
 
     
-     // Logout user
+     // -------------------Logout user------------------------
      
     public function logout(Request $request)
     {
@@ -90,7 +99,7 @@ class AuthController extends Controller
 
 
     
-     // Verify email 
+     // ------------------------Verify email--------------------------
      
     public function verifyEmail(Request $request)
     {
