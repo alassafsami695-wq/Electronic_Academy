@@ -9,31 +9,36 @@ use App\Models\Path;
 class PathController extends Controller
 {
     
+    //-----------------------عرض جميع المسارات (Paths)-------------
+     
     public function index()
     {
         return response()->json(Path::all());
     }
 
-
+    
+    //-------------------------عرض تفاصيل مسار محدد-------------------
+   
     public function show(Path $path)
     {
-        // $path->tips = json_decode($path->tips); 
         return response()->json($path);
     }
 
     
+    //-----------------------------إنشاء مسار جديد---------------------
+    
     public function store(Request $request)
     {
         $request->validate([
-            'title'        => 'required|string|max:255|unique:paths,title',
+            'title'       => 'required|string|max:255|unique:paths,title',
             'description' => 'nullable|string',
             'tips'        => 'nullable|array',
         ]);
 
         $path = Path::create([
-            'title'        => $request->title,
+            'title'       => $request->title,
             'description' => $request->description,
-            'tips'        => $request->tips, 
+            'tips'        => $request->tips,
         ]);
 
         return response()->json([
@@ -42,7 +47,9 @@ class PathController extends Controller
         ], 201);
     }
 
-   
+    
+    //-----------------------------تعديل بيانات مسار موجود------------------------
+    
     public function update(Request $request, Path $path)
     {
         $request->validate([
@@ -63,8 +70,9 @@ class PathController extends Controller
         ]);
     }
 
-
-  
+    
+    //-----------------------حذف مسار----------------
+     
     public function destroy(Path $path)
     {
         $path->delete();

@@ -8,22 +8,26 @@ use App\Models\Job;
 
 class JobController extends Controller
 {
-   
+    
+    //------------------------عرض جميع الوظائف-----------------------
+     
     public function index()
     {
         return response()->json(Job::all());
     }
 
-    
+ 
     public function create()
     {
         //
     }
 
-   
+    
+    // ----------------------تخزين وظيفة جديدة-----------------
+     
     public function store(Request $request)
     {
-    $request->validate([
+        $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'required|string',
             'salary'      => 'nullable|numeric',
@@ -34,25 +38,33 @@ class JobController extends Controller
         return response()->json([
             'message' => 'Job created successfully',
             'job'     => $job,
-        ], 201);   
+        ], 201);
     }
 
     
+    //---------------------------عرض وظيفة محددة-----------------
+     
     public function show(string $id)
     {
-       return response()->json($job);
+        $job = Job::findOrFail($id);
+
+        return response()->json($job);
     }
 
-   
+    
     public function edit(string $id)
     {
         //
     }
 
     
+    //----------------------------تحديث بيانات وظيفة----------------
+     
     public function update(Request $request, string $id)
     {
-     $job->update($request->all());
+        $job = Job::findOrFail($id);
+
+        $job->update($request->all());
 
         return response()->json([
             'message' => 'Job updated successfully',
@@ -61,9 +73,13 @@ class JobController extends Controller
     }
 
     
+    // ---------------------------حذف وظيفة----------------------
+     
     public function destroy(string $id)
     {
-         $job->delete();
+        $job = Job::findOrFail($id);
+
+        $job->delete();
 
         return response()->json(['message' => 'Job deleted successfully']);
     }

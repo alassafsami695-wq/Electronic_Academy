@@ -9,35 +9,33 @@ use App\Models\Comment;
 
 class Lesson extends Model
 {
+    //---------------- الحقول القابلة للتعبئة -----------------
     protected $fillable = [
-        'course_id',
-        'title',
-        'order',
-        'video_url',
-        'content',
+        'course_id',   
+        'title',       
+        'order',       
+        'video_url',   
+        'content',     
     ];
 
-    
-     //---------------------------------- الكورس الذي ينتمي إليه الدرس-----------------------
-     
+    //---------------- الكورس الذي ينتمي إليه الدرس -----------------
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
     }
 
-    
-     //------------------------------------ التعليقات الأساسية (الأب) للدرس-----------------------
-     
+    //---------------- التعليقات الأساسية (الأب) للدرس -----------------
     public function comments(): HasMany
     {
-        return $this->hasMany(Comment::class)->whereNull('parent_id')->orderBy('created_at', 'desc');
+        return $this->hasMany(Comment::class)
+                    ->whereNull('parent_id') 
+                    ->orderBy('created_at', 'desc'); 
     }
 
-    
-     // ----------------------جميع التعليقات بدون فلترة---------------
-     
+    //---------------- جميع التعليقات بدون فلترة -----------------
     public function allComments(): HasMany
     {
-        return $this->hasMany(Comment::class)->orderBy('created_at', 'desc');
+        return $this->hasMany(Comment::class)
+                    ->orderBy('created_at', 'desc'); 
     }
 }

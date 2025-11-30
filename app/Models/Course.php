@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Course extends Model
 {
+    //---------------- الحقول القابلة للتعبئة -----------------
     protected $fillable = [
         'title',
         'description',
@@ -21,31 +22,32 @@ class Course extends Model
         'path_id',
     ];
 
+    //---------------- التحويلات (Casting) -----------------
     protected $casts = [
-        'price' => 'float',
-        'rating' => 'float',
-        'number_of_students' => 'integer',
+        'price'             => 'float',
+        'rating'            => 'float',
+        'number_of_students'=> 'integer',
     ];
 
-    
+    //---------------- العلاقة مع المعلم -----------------
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
-  
+    //---------------- العلاقة مع المسار -----------------
     public function path(): BelongsTo
     {
         return $this->belongsTo(Path::class);
     }
 
-    
+    //---------------- العلاقة مع الدروس -----------------
     public function lessons(): HasMany
     {
         return $this->hasMany(Lesson::class)->orderBy('order');
     }
 
-    
+    //---------------- نسبة تقدم المستخدم في الكورس -----------------
     public function getProgressPercentageAttribute(): float
     {
         $user = Auth::user();
@@ -66,19 +68,19 @@ class Course extends Model
         return round(($completedLessonsCount / $totalLessons) * 100, 2);
     }
 
-    
+    //---------------- اسم المعلم المرتبط بالكورس -----------------
     public function getTeacherNameAttribute(): ?string
     {
         return $this->teacher->name ?? null;
     }
 
-   
+    //---------------- عنوان المسار المرتبط بالكورس -----------------
     public function getPathTitleAttribute(): ?string
     {
         return $this->path->title ?? null;
     }
 
-   
+    //---------------- رابط الصورة المخزنة للكورس -----------------
     public function getPhotoUrlAttribute(): ?string
     {
         return $this->photo ? asset('storage/' . $this->photo) : null;
