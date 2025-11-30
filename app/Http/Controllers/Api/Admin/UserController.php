@@ -46,6 +46,29 @@ class UserController extends Controller
         ], 201);
     }
 
+    // ----------------- تعديل أدمن -----------------
+    public function updateAdmin(Request $request, User $admin)
+    {
+        $request->validate([
+            'name'  => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $admin->id,
+        ]);
+
+        $admin->update($request->only(['name','email']));
+
+        return response()->json([
+            'message' => 'Admin updated successfully',
+            'user'    => $admin
+        ]);
+    }
+
+    // ----------------- حذف أدمن -----------------
+    public function destroyAdmin(User $admin)
+    {
+        $admin->delete();
+        return response()->json(['message' => 'Admin deleted successfully']);
+    }
+
     // ----------------- إدارة الأساتذة -----------------
     public function storeTeacher(Request $request)
     {
@@ -102,7 +125,7 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        $studentRole = Role::where('name', 'student')->firstOrFail();
+        $studentRole = Role::where('name', 'user')->firstOrFail();
 
         $user = User::create([
             'name'              => $request->name,
@@ -181,7 +204,6 @@ class UserController extends Controller
         return response()->json(['message' => 'Comment deleted successfully']);
     }
 
-    // ----------------- كورسات المستخدم الحالي (طالب/أستاذ) -----------------
     public function getMyCourses()
     {
         $user = auth()->user();
