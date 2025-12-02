@@ -17,18 +17,17 @@ class CourseController extends Controller
         return CourseResource::collection($courses);
     }
 
-    public function store(StoreCourseRequest $request)
+      public function store(StoreCourseRequest $request)
     {
-        $data = $request->validated();
-
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('courses', 'public');
-        }
-
-        $course = Course::create($data);
-
-        return new CourseResource($course);
+         $data = $request->validated(); 
+         if ($request->hasFile('photo')) 
+            {
+             $data['photo'] = $request->file('photo')->store('courses', 'public');
+             
+            }
+         $course = Course::create($data); return new CourseResource($course); 
     }
+
 
     public function show(Course $course)
     {

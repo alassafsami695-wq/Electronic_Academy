@@ -61,14 +61,15 @@ Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(funct
 
     Route::apiResource('courses', CourseController::class);
 
-    // // Courses
-    // Route::get('courses', [CourseController::class, 'index']);
-    // Route::get('courses/{course}', [CourseController::class, 'show']);
-    // Route::post('courses', [CourseController::class, 'store']);
-    // Route::put('courses/{course}', [CourseController::class, 'update']);
-    // Route::delete('courses/{course}', [CourseController::class, 'destroy']);
+    // Courses
+    Route::get('courses', [CourseController::class, 'index']);
+    Route::get('courses/{course}', [CourseController::class, 'show']);
+    Route::post('courses', [CourseController::class, 'store']);
+    Route::put('courses/{course}', [CourseController::class, 'update']);
+    Route::delete('courses/{course}', [CourseController::class, 'destroy']);
 
     // Lessons
+    Route::get('courses/{course}/lessons', [LessonController::class, 'index']);
     Route::get('courses/{course}/lessons/{lesson}', [LessonController::class, 'show']); 
     Route::post('courses/{course}/lessons', [LessonController::class, 'store']);
     Route::put('courses/{course}/lessons/{lesson}', [LessonController::class, 'update']);
