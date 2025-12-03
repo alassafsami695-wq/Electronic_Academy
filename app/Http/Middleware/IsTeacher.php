@@ -11,7 +11,15 @@ class IsTeacher
     {
         $user = auth()->user();
 
-        if (!$user || $user->role_id !== 2 ) {
+        // السماح للـ Teacher أو Admin أو Super Admin
+        if (
+            !$user ||
+            (
+                $user->role_id !== 2 && // Teacher
+                $user->role_id !== 3 && // Admin
+                !$user->is_super_admin   // Super Admin
+            )
+        ) {
             return response()->json([
                 'message' => 'Forbidden: Teachers only.'
             ], 403);

@@ -29,39 +29,46 @@ Route::middleware(['auth:sanctum','is.Admin'])->prefix('admin')->group(function 
 
     // إدارة الطلاب
     Route::post('students', [UserController::class, 'storeStudent']);
-    Route::put('students/{student}', [UserController::class, 'updateStudent']);
+    Route::post('students/{student}/update', [UserController::class, 'updateStudent']);
     Route::delete('students/{student}', [UserController::class, 'destroyUser']);
 
     // إدارة الأساتذة
     Route::post('teachers', [UserController::class, 'storeTeacher']);
-    Route::put('teachers/{teacher}', [UserController::class, 'updateTeacher']);
+    Route::post('teachers/{teacher}/update', [UserController::class, 'updateTeacher']);
     Route::delete('teachers/{teacher}', [UserController::class, 'destroyUser']);
 
-    // Route::post('admins', [UserController::class, 'storeAdmin']);
-    // Route::put('admins/{admin}', [UserController::class, 'updateAdmin']);
-    // Route::delete('admins/{admin}', [UserController::class, 'destroyUser']);
 
-    // Route::post('paths', [UserController::class, 'storePath']);
-    // Route::put('paths/{path}', [UserController::class, 'updatePath']);
-    // Route::delete('paths/{path}', [UserController::class, 'destroyPath']);
 
-    // Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
+    Route::post('admins', [UserController::class, 'storeAdmin']);
+    Route::post('admins/{admin}/update', [UserController::class, 'updateAdmin']);
+    Route::delete('admins/{admin}', [UserController::class, 'destroyUser']);
+
+    Route::post('paths', [UserController::class, 'storePath']);
+    Route::post('paths/{path}/update', [UserController::class, 'updatePath']);
+    Route::delete('paths/{path}', [UserController::class, 'destroyPath']);
+
+    Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
+
 });
 
 // ------------------------- TEACHER ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(function () {
     // Paths
     Route::post('paths', [PathController::class, 'store']);
-    Route::put('paths/{path}', [PathController::class, 'update']);
+    Route::post('paths/{path}/update', [PathController::class, 'update']);
 
-    // Courses
-    Route::apiResource('courses', CourseController::class);
+    // Courses 
+    Route::get('courses', [CourseController::class, 'index']);
+    Route::get('courses/{course}', [CourseController::class, 'show']);
+    Route::post('courses', [CourseController::class, 'store']);
+    Route::post('courses/{course}/update', [CourseController::class, 'update']);
+    Route::delete('courses/{course}', [CourseController::class, 'destroy']);
 
     // Lessons
     Route::get('courses/{course}/lessons', [LessonController::class, 'index']);
     Route::get('courses/{course}/lessons/{lesson}', [LessonController::class, 'show']); 
     Route::post('courses/{course}/lessons', [LessonController::class, 'store']);
-    Route::put('courses/{course}/lessons/{lesson}', [LessonController::class, 'update']);
+    Route::post('courses/{course}/lessons/{lesson}/update', [LessonController::class, 'update']);
     Route::delete('courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy']);
 
     // Lesson Comments
@@ -72,7 +79,6 @@ Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(funct
 
 // ------------------------- ADMIN OR TEACHER ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.AdminOrTeacher'])->group(function () {
-    // كورسات الأستاذ
     Route::get('teachers/{teacher}/courses', [UserController::class, 'teacherCourses']);
     Route::delete('courses/{course}', [UserController::class, 'destroyCourse']);
 });
@@ -82,7 +88,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('comments', [CommentController::class, 'index']); 
     Route::get('comments/{id}', [CommentController::class, 'show']);
     Route::post('comments', [CommentController::class, 'store']); 
-    Route::put('comments/{comment}', [CommentController::class, 'update']); 
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']); 
 });
 
@@ -91,6 +96,5 @@ Route::prefix('job-listings')->group(function () {
     Route::get('/', [JobListingController::class, 'index']);
     Route::get('/{job}', [JobListingController::class, 'show']);
     Route::post('/', [JobListingController::class, 'store']);
-    Route::put('/{job}', [JobListingController::class, 'update']);
     Route::delete('/{job}', [JobListingController::class, 'destroy']);
 });

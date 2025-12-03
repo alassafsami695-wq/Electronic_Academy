@@ -4,18 +4,22 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
-class isAdminOrTeacher
+class IsAdminOrTeacher
 {
-    
-    // Handle an incoming request.
-    
-     public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         $user = $request->user();
 
-        if (!$user || ($user->role_id !== 2 || $user->role_id !== 3)) {
+        // السماح للـ Teacher أو Admin أو Super Admin
+        if (
+            !$user ||
+            (
+                $user->role_id !== 2 && // Teacher
+                $user->role_id !== 3 && // Admin
+                !$user->is_super_admin   // Super Admin
+            )
+        ) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
