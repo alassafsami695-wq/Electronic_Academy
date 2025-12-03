@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Job extends Model
+class JobListing extends Model
 {
     use HasFactory;
 
-    //---------------- الحقول القابلة للتعبئة -----------------
     protected $fillable = [
-        'title',        
-        'description',  
-        'salary',       
+        'title',
+        'description',
+        'salary',
     ];
 }
+    

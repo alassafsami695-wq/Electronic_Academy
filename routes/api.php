@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\PathController;
-use App\Http\Controllers\Api\JobController;
+use App\Http\Controllers\Api\JobListingController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Teacher\CourseController;
 use App\Http\Controllers\Api\Teacher\LessonController;
@@ -97,10 +97,11 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // ------------------------- JOB ROUTES -------------------------
-Route::prefix('jobs')->group(function () {
-    Route::get('/', [JobController::class, 'index']);
-    Route::get('/{job}', [JobController::class, 'show']);
-    Route::post('/', [JobController::class, 'store']);
-    Route::put('/{job}', [JobController::class, 'update']);
-    Route::delete('/{job}', [JobController::class, 'destroy']);
+Route::prefix('job-listings')->group(function () {
+    Route::get('/', [JobListingController::class, 'index']);
+    Route::get('/{job}', [JobListingController::class, 'show']);
+    Route::post('/', [JobListingController::class, 'store']);
+    Route::put('/{job}', [JobListingController::class, 'update']);
+    Route::delete('/{job}', [JobListingController::class, 'destroy']);
 });
+

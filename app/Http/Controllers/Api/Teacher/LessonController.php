@@ -7,6 +7,7 @@ use App\Models\Lesson;
 use App\Models\Course;
 use Illuminate\Http\Request;
 use App\Http\Resources\LessonResource;
+use App\Http\Requests\UpdateLessonRequest;
 
 class LessonController extends Controller
 {
@@ -14,14 +15,12 @@ class LessonController extends Controller
     public function index(Course $course)
     {
         $lessons = $course->lessons()->orderBy('order')->get();
-
         return LessonResource::collection($lessons);
     }
 
-    // ----------------------------- عرض درس واحد داخل كورس -----------------------------
+    // ----------------------------- عرض درس واحد -----------------------------
     public function show(Course $course, Lesson $lesson)
     {
-        // تأكد أن الدرس ينتمي للكورس
         if ($lesson->course_id !== $course->id) {
             return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
         }
@@ -29,7 +28,7 @@ class LessonController extends Controller
         return new LessonResource($lesson);
     }
 
-    // ----------------------------- إنشاء درس جديد داخل كورس محدد -----------------------------
+    // ----------------------------- إنشاء درس جديد (لا نعدل عليها) -----------------------------
     public function store(Request $request, Course $course)
     {
         $request->validate([
@@ -49,41 +48,35 @@ class LessonController extends Controller
 
         $lesson = Lesson::create($data);
 
-        return response()->json([
-            'message' => 'تم إنشاء الدرس بنجاح',
-            'data' => new LessonResource($lesson)
-        ], 201);
+        return (new LessonResource($lesson))
+            ->additional(['message' => 'تم إنشاء الدرس بنجاح'])
+            ->response()
+            ->setStatusCode(201);
     }
 
-    // ----------------------------- تعديل بيانات درس موجود داخل كورس -----------------------------
-    public function update(Request $request, Course $course, Lesson $lesson)
+    // ----------------------------- تعديل درس -----------------------------
+    public function update(UpdateLessonRequest $request, Course $course, Lesson $lesson)
     {
         if ($lesson->course_id !== $course->id) {
             return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
         }
 
-        $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'order' => 'sometimes|required|integer|min:1',
-            'video_url' => 'nullable|file|mimetypes:video/mp4,video/avi,video/mpeg|max:204800',
-            'content' => 'nullable|string'
-        ]);
+        // اجلب فقط الحقول المرسلة
+        $data = $request->validated();
 
-        $data = $request->only(['title', 'order', 'content']);
-
+        // تحديث الفيديو فقط إذا تم إرساله
         if ($request->hasFile('video_url')) {
             $data['video_url'] = $request->file('video_url')->store('lessons/videos', 'public');
         }
 
+        // تحديث الدرس
         $lesson->update($data);
 
-        return response()->json([
-            'message' => 'تم تعديل الدرس بنجاح',
-            'data' => new LessonResource($lesson)
-        ]);
+        return (new LessonResource($lesson->fresh()))
+            ->additional(['message' => 'تم تعديل الدرس بنجاح']);
     }
 
-    // ----------------------------- حذف درس من كورس -----------------------------
+    // ----------------------------- حذف درس -----------------------------
     public function destroy(Course $course, Lesson $lesson)
     {
         if ($lesson->course_id !== $course->id) {
