@@ -11,22 +11,22 @@ class Course extends Model
 {
     //---------------- الحقول القابلة للتعبئة -----------------
     protected $fillable = [
-        'title',
-        'description',
-        'photo',
-        'price',
-        'course_duration',
+        'title',             
+        'description',       
+        'photo',             
+        'price',             
+        'course_duration',   
         'number_of_students',
-        'rating',
-        'teacher_id',
-        'path_id',
+        'rating',            
+        'teacher_id',        
+        'path_id',          
     ];
 
     //---------------- التحويلات (Casting) -----------------
     protected $casts = [
-        'price'             => 'float',
-        'rating'            => 'float',
-        'number_of_students'=> 'integer',
+        'price'              => 'float',   
+        'rating'             => 'float',   
+        'number_of_students' => 'integer', 
     ];
 
     //---------------- العلاقة مع المعلم -----------------
@@ -56,15 +56,16 @@ class Course extends Model
             return 0.0;
         }
 
-        $totalLessons = $this->lessons->count();
+        $totalLessons = $this->lessons->count(); 
         $completedLessonsCount = $user->completedLessons()
             ->whereIn('lesson_id', $this->lessons->pluck('id'))
-            ->count();
+            ->count(); 
 
         if ($totalLessons === 0) {
             return 0.0;
         }
 
+        // حساب نسبة التقدم بدقة (من 0 إلى 100)
         return round(($completedLessonsCount / $totalLessons) * 100, 2);
     }
 

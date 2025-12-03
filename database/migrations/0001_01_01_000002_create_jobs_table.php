@@ -23,6 +23,7 @@ return new class extends Migration
             $table->text('description');
             $table->decimal('salary', 10, 2)->nullable();
         });
+   
 
         Schema::create('job_batches', function (Blueprint $table) {
             $table->string('id')->primary();
@@ -37,15 +38,8 @@ return new class extends Migration
             $table->integer('finished_at')->nullable();
         });
 
-        Schema::create('failed_jobs', function (Blueprint $table) {
-            $table->id();
-            $table->string('uuid')->unique();
-            $table->text('connection');
-            $table->text('queue');
-            $table->longText('payload');
-            $table->longText('exception');
-            $table->timestamp('failed_at')->useCurrent();
-        });
+           
+
     }
 
     /**

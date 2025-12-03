@@ -18,24 +18,24 @@ class Lesson extends Model
         'content',     
     ];
 
-    //---------------- الكورس الذي ينتمي إليه الدرس -----------------
+    //---------------- العلاقة مع الكورس -----------------
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
     }
 
-    //---------------- التعليقات الأساسية (الأب) للدرس -----------------
+    //---------------- التعليقات الجذرية (الأب فقط) -----------------
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class)
-                    ->whereNull('parent_id') 
-                    ->orderBy('created_at', 'desc'); 
+                    ->whereNull('parent_id')
+                    ->orderBy('created_at', 'desc');
     }
 
-    //---------------- جميع التعليقات بدون فلترة -----------------
+    //---------------- جميع التعليقات (بما فيها الردود) -----------------
     public function allComments(): HasMany
     {
         return $this->hasMany(Comment::class)
-                    ->orderBy('created_at', 'desc'); 
+                    ->orderBy('created_at', 'desc');
     }
 }

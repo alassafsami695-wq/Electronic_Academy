@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Comment extends Model
 {
+    // الحقول القابلة للتعبئة
     protected $fillable = ['user_id', 'lesson_id', 'parent_id', 'body'];
 
     //---------------- صاحب التعليق -----------------

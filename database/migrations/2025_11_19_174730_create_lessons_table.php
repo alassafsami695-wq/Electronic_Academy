@@ -9,7 +9,7 @@ return new class extends Migration {
         Schema::create('lessons', function (Blueprint $table) {
             $table->id();
             $table->foreignId('course_id')->constrained()->onDelete('cascade');
-            $table->string('title');
+            $table->string('title')->default('بدون عنوان');
             $table->unsignedInteger('order');
             $table->string('video_url')->nullable();
             $table->longText('content')->nullable();
