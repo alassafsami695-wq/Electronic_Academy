@@ -24,7 +24,6 @@ class UserController extends Controller
     {
         $query = User::query();
 
-        // Filter by role name if provided
         if ($request->has('role')) {
             $roleName = $request->input('role');
             $query->whereHas('role', function ($q) use ($roleName) {
@@ -78,7 +77,6 @@ class UserController extends Controller
         ], 201);
     }
 
-    // ----------------- تعديل أدمن -----------------
     public function updateAdmin(Request $request, User $admin)
     {
         $request->validate([
@@ -92,6 +90,17 @@ class UserController extends Controller
             'message' => 'Admin updated successfully',
             'user'    => $admin
         ]);
+    }
+
+    public function destroyAdmin(User $admin)
+    {
+        if (!$admin->role || $admin->role->name !== 'admin') {
+            return response()->json(['message' => 'Target user is not an admin'], 422);
+        }
+
+        $admin->delete();
+
+        return response()->json(['message' => 'Admin deleted successfully']);
     }
 
     // ----------------- إدارة الأساتذة -----------------
@@ -135,6 +144,23 @@ class UserController extends Controller
         ]);
     }
 
+    public function destroyTeacher(User $teacher)
+    {
+        if (!$teacher->role || $teacher->role->name !== 'teacher') {
+            return response()->json(['message' => 'Target user is not a teacher'], 422);
+        }
+
+        $teacher->comments()->delete();
+        $teacher->courses()->delete();
+        $teacher->wallet()->delete();
+        $teacher->enrolledCourses()->detach();
+        $teacher->completedLessons()->detach();
+
+        $teacher->delete();
+
+        return response()->json(['message' => 'Teacher deleted successfully']);
+    }
+
     // ----------------- إدارة الطلاب -----------------
     public function storeStudent(Request $request)
     {
@@ -176,10 +202,20 @@ class UserController extends Controller
         ]);
     }
 
-    public function destroyUser(User $user)
+    public function destroyStudent(User $student)
     {
-        $user->delete();
-        return response()->json(['message' => 'User deleted successfully']);
+        if (!$student->role || $student->role->name !== 'user') {
+            return response()->json(['message' => 'Target user is not a student'], 422);
+        }
+
+        $student->comments()->delete();
+        $student->wallet()->delete();
+        $student->enrolledCourses()->detach();
+        $student->completedLessons()->detach();
+
+        $student->delete();
+
+        return response()->json(['message' => 'Student deleted successfully']);
     }
 
     // ----------------- كورسات الأستاذ -----------------

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -74,7 +73,8 @@ class User extends Authenticatable
     //----------------------------- الدروس المكتملة ---------------------
     public function completedLessons(): BelongsToMany
     {
-        return $this->belongsToMany(Lesson::class, 'lesson_completion')
+        // ✅ اسم الجدول الصحيح هو lesson_completions
+        return $this->belongsToMany(Lesson::class, 'lesson_completions')
                     ->withPivot('completed_at') // وقت إكمال الدرس
                     ->withTimestamps();         // وقت الإنشاء والتحديث
     }
@@ -82,7 +82,6 @@ class User extends Authenticatable
     //-------------------------- تحقق إذا كان المستخدم Admin ------------------------
     public function isAdmin(): bool
     {
-        // نتحقق أولاً من is_super_admin ثم من الدور
         return $this->is_super_admin || ($this->role && $this->role->name === 'admin');
     }
 

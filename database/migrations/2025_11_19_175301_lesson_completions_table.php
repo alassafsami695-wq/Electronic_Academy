@@ -19,7 +19,11 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
-        Schema::dropIfExists('lesson_completions');
+    public function down(): void
+    {
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('lesson_completions');   // ✅ الجدول الصحيح
+        Schema::enableForeignKeyConstraints();
     }
+
 };

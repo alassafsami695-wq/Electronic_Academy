@@ -60,4 +60,12 @@ class CourseController extends Controller
 
         return response()->json(['message' => 'Course deleted successfully']);
     }
+        public function bestSelling()
+    {
+        $courses = Course::orderByDesc('sales_count')
+                          ->take(5)
+                          ->get();
+
+        return response()->json($courses);
+    }
 }

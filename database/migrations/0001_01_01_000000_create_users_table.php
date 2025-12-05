@@ -34,8 +34,12 @@ return new class extends Migration {
         });
     }
 
-    //---------------- التراجع عن الإنشاء (الحذف) -----------------
-    public function down(): void {
-        Schema::dropIfExists('users'); 
-    }
+            //---------------- التراجع عن الإنشاء (الحذف) -----------------
+        public function down(): void
+        {
+            Schema::disableForeignKeyConstraints();
+            Schema::dropIfExists('users');
+            Schema::enableForeignKeyConstraints();
+        }
+
 };

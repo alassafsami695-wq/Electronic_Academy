@@ -11,15 +11,7 @@ class IsAdminOrTeacher
     {
         $user = $request->user();
 
-        // السماح للـ Teacher أو Admin أو Super Admin
-        if (
-            !$user ||
-            (
-                $user->role_id !== 2 && // Teacher
-                $user->role_id !== 3 && // Admin
-                !$user->is_super_admin   // Super Admin
-            )
-        ) {
+        if (!$user || !in_array($user->role_id, [1, 2])) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

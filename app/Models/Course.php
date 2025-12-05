@@ -19,7 +19,8 @@ class Course extends Model
         'number_of_students',
         'rating',            
         'teacher_id',        
-        'path_id',          
+        'path_id',      
+        'sales_count',    
     ];
 
     //---------------- التحويلات (Casting) -----------------

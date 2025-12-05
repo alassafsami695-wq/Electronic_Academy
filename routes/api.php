@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Teacher\CommentController;
 // ------------------------- PATHS -------------------------
 Route::get('/paths', [PathController::class, 'index']);
 Route::get('/paths/{path}', [PathController::class, 'show']);
+Route::get('/courses/best-selling', [CourseController::class, 'bestSelling']);
 
 // ------------------------- AUTH -------------------------
 Route::post('/register', [AuthController::class, 'register']);
@@ -30,25 +31,25 @@ Route::middleware(['auth:sanctum','is.Admin'])->prefix('admin')->group(function 
     // إدارة الطلاب
     Route::post('students', [UserController::class, 'storeStudent']);
     Route::post('students/{student}/update', [UserController::class, 'updateStudent']);
-    Route::delete('students/{student}', [UserController::class, 'destroyUser']);
+    Route::delete('students/{student}', [UserController::class, 'destroyStudent']); // ✅ دالة خاصة
 
     // إدارة الأساتذة
     Route::post('teachers', [UserController::class, 'storeTeacher']);
     Route::post('teachers/{teacher}/update', [UserController::class, 'updateTeacher']);
-    Route::delete('teachers/{teacher}', [UserController::class, 'destroyUser']);
+    Route::delete('teachers/{teacher}', [UserController::class, 'destroyTeacher']); // ✅ دالة خاصة
 
-
-
+    // إدارة الأدمن
     Route::post('admins', [UserController::class, 'storeAdmin']);
     Route::post('admins/{admin}/update', [UserController::class, 'updateAdmin']);
-    Route::delete('admins/{admin}', [UserController::class, 'destroyUser']);
+    Route::delete('admins/{admin}', [UserController::class, 'destroyAdmin']); // ✅ دالة خاصة
 
+    // إدارة المسارات
     Route::post('paths', [UserController::class, 'storePath']);
     Route::post('paths/{path}/update', [UserController::class, 'updatePath']);
     Route::delete('paths/{path}', [UserController::class, 'destroyPath']);
 
+    // إدارة التعليقات
     Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
-
 });
 
 // ------------------------- TEACHER ROUTES -------------------------

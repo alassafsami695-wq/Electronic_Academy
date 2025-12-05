@@ -26,6 +26,17 @@ class UserSeeder extends Seeder
             ]
         );
 
+                User::firstOrCreate(
+            ['email' => 'sam11@gmail.com'],
+            [
+                'name' => 'Admin',
+                'password' => bcrypt('password'),
+                'role_id' => Role::where('name', 'admin')->first()->id,
+                'is_super_admin' => false,
+                'is_verified' => true,
+            ]
+        );
+
         User::firstOrCreate(
             ['email' => 'teacher@example.com'],
             [
