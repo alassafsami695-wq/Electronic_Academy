@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\User;
 use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
 use App\Http\Resources\CourseResource;
@@ -17,16 +18,27 @@ class CourseController extends Controller
         return CourseResource::collection($courses);
     }
 
-      public function store(StoreCourseRequest $request)
-    {
-         $data = $request->validated(); 
-         if ($request->hasFile('photo')) 
-            {
-             $data['photo'] = $request->file('photo')->store('courses', 'public');
-             
+        public function store(StoreCourseRequest $request)
+        {
+            // ✅ التحقق من البيانات القادمة من StoreCourseRequest
+            $data = $request->validated();
+
+            // ✅ ربط الكورس بالمدرّس المسجل دخول
+            $data['teacher_id'] = auth()->id();
+
+            // 📸 رفع الصورة إن وجدت
+            if ($request->hasFile('photo')) {
+                $data['photo'] = $request->file('photo')->store('courses', 'public');
             }
-         $course = Course::create($data); return new CourseResource($course); 
-    }
+
+            // ➕ إنشاء الكورس
+            $course = Course::create($data);
+
+            // ✅ إرجاع الكورس كـ Resource
+            return new CourseResource($course);
+        }
+
+
 
 
     public function show(Course $course)
@@ -60,11 +72,12 @@ class CourseController extends Controller
 
         return response()->json(['message' => 'Course deleted successfully']);
     }
-        public function bestSelling()
+
+    public function bestSelling()
     {
         $courses = Course::orderByDesc('sales_count')
-                          ->take(5)
-                          ->get();
+                         ->take(5)
+                         ->get();
 
         return response()->json($courses);
     }

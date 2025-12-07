@@ -50,9 +50,17 @@ class UserController extends Controller
         ]);
     }
 
-    // ----------------- إضافة أدمن -----------------
+    // ----------------- إضافة أدمن (فقط Super Admin) -----------------
     public function storeAdmin(Request $request)
     {
+        $currentUser = auth()->user();
+
+        if (!$currentUser->is_super_admin) {
+            return response()->json([
+                'message' => 'Only Super Admin can create Admin accounts'
+            ], 403);
+        }
+
         $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|unique:users,email',
@@ -77,6 +85,7 @@ class UserController extends Controller
         ], 201);
     }
 
+    // ----------------- تعديل أدمن -----------------
     public function updateAdmin(Request $request, User $admin)
     {
         $request->validate([
@@ -92,8 +101,17 @@ class UserController extends Controller
         ]);
     }
 
+    // ----------------- حذف أدمن (فقط Super Admin) -----------------
     public function destroyAdmin(User $admin)
     {
+        $currentUser = auth()->user();
+
+        if (!$currentUser->is_super_admin) {
+            return response()->json([
+                'message' => 'Only Super Admin can delete Admin accounts'
+            ], 403);
+        }
+
         if (!$admin->role || $admin->role->name !== 'admin') {
             return response()->json(['message' => 'Target user is not an admin'], 422);
         }
@@ -259,21 +277,34 @@ class UserController extends Controller
         return response()->json(['message' => 'Comment deleted successfully']);
     }
 
+    // ----------------- كورسات الطالب + التقدم -----------------
     public function getMyCourses()
     {
         $user = auth()->user();
 
         $courses = $user->enrolledCourses()->with('lessons')->get();
 
-        $coursesWithProgress = $courses->map(function ($course) {
+        $coursesWithProgress = $courses->map(function ($course) use ($user) {
+            $totalLessons = $course->lessons->count();
+            $completedLessons = $user->completedLessons()
+                ->where('course_id', $course->id)
+                ->count();
+
+            $progress = $totalLessons > 0
+                ? round(($completedLessons / $totalLessons) * 100, 2)
+                : 0;
+
             return [
-                'id'                 => $course->id,
-                'title'              => $course->title,
-                'price'              => $course->price,
-                'progress_percentage'=> $course->progress_percentage ?? 0,
+                'course'            => $course,
+                'total_lessons'     => $totalLessons,
+                'completed_lessons' => $completedLessons,
+                'progress'          => $progress,
             ];
         });
 
-        return response()->json($coursesWithProgress);
+        return response()->json([
+            'message' => 'Courses retrieved successfully',
+            'data'    => $coursesWithProgress
+        ]);
     }
 }

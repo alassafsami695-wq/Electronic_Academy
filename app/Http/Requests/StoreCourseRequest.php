@@ -26,7 +26,7 @@ class StoreCourseRequest extends FormRequest
             'description'       => 'nullable|string',
             'photo'             => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'price'             => 'required|numeric|min:0',
-            'teacher_id'        => 'required|exists:users,id',
+            //'teacher_id'        => 'required|exists:users,id',
             'path_id'           => 'required|exists:paths,id',
         ];
     }
