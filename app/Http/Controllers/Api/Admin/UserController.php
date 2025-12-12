@@ -22,16 +22,44 @@ class UserController extends Controller
     // ----------------- قائمة المستخدمين -----------------
     public function index(Request $request)
     {
+        $currentUser = auth()->user();
+
         $query = User::query();
 
+        // ------------------- Super Admin: يشوف الكل -------------------
+        if ($currentUser->is_super_admin) {
+
+            $query->whereHas('role', function($q) {
+                $q->whereIn('name', ['admin', 'teacher', 'user']);
+            });
+
+        }
+        // ------------------- Admin: يشوف فقط teachers + users -------------------
+        else {
+
+            $query->whereHas('role', function($q) {
+                $q->whereIn('name', ['teacher', 'user']);
+            });
+        }
+
+        // ----------- فلترة بحسب الدور إذا كانت موجودة بالـ request -----------
         if ($request->has('role')) {
+
             $roleName = $request->input('role');
+
+            // منع ال admin من رؤية admin حتى لو طلب role=admin
+            if (!$currentUser->is_super_admin && $roleName === 'admin') {
+                return response()->json([
+                    'message' => 'Admins can only view teachers and users'
+                ], 403);
+            }
+
             $query->whereHas('role', function ($q) use ($roleName) {
                 $q->where('name', $roleName);
             });
         }
 
-        $users = $query->with('role', 'wallet')->paginate(15);
+        $users = $query->with(['role', 'wallet'])->paginate(15);
 
         return response()->json([
             'message' => 'Users retrieved successfully',
