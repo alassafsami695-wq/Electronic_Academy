@@ -76,12 +76,15 @@ class PathController extends Controller
     
     //-----------------------حذف مسار----------------
      
-    public function destroy(Path $path)
-    {
-        $path->delete();
+   public function destroy(Path $path)
+{
+    $path->courses()->delete();
 
-        return response()->json([
-            'message' => 'Path deleted successfully'
-        ]);
-    }
+    $path->delete();
+
+    return response()->json([
+        'message' => 'Path and its courses deleted successfully'
+    ]);
+}
+
 }
