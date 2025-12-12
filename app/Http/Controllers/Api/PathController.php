@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PathResource;
 use Illuminate\Http\Request;
 use App\Models\Path;
 
@@ -21,7 +22,9 @@ class PathController extends Controller
    
     public function show(Path $path)
     {
-        return response()->json($path);
+    return new PathResource(
+        $path->load('courses')
+    );
     }
 
     
