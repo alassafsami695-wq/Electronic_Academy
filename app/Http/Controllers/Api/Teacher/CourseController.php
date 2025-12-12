@@ -43,8 +43,11 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        return new CourseResource($course->load(['teacher', 'path']));
+        return new CourseResource(
+            $course->load(['teacher', 'path', 'lessons'])
+        );
     }
+
 
     public function update(UpdateCourseRequest $request, Course $course)
     {

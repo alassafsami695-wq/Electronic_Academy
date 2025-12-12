@@ -18,6 +18,8 @@ class CourseResource extends JsonResource
             'course_duration'    => $this->course_duration,
             'number_of_students' => $this->number_of_students,
             'rating'             => $this->rating,
+            'lessons' => LessonResource::collection($this->whenLoaded('lessons')),
+
 
             'teacher'            => new UserResource($this->whenLoaded('teacher')),
             'path'               => new PathResource($this->whenLoaded('path')),
