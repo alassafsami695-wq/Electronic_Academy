@@ -19,14 +19,18 @@ class LessonController extends Controller
     }
 
     // ----------------------------- عرض درس واحد -----------------------------
+   
     public function show(Course $course, Lesson $lesson)
     {
         if ($lesson->course_id !== $course->id) {
-            return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
-        }
+                return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
+            }
 
-        return new LessonResource($lesson);
+        return new LessonResource(
+            $lesson->load(['comments.user', 'comments.replies'])
+        );
     }
+
 
     // ----------------------------- إنشاء درس جديد (لا نعدل عليها) -----------------------------
     public function store(Request $request, Course $course)

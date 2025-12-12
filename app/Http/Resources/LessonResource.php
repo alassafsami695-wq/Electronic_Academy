@@ -21,6 +21,7 @@ class LessonResource extends JsonResource
             'order' => $this->order,
             'video_url' => $this->video_url ? asset('storage/' . $this->video_url) : null,
             'content' => $this->content,
+            'comments' => CommentResource::collection($this->whenLoaded('comments')),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
