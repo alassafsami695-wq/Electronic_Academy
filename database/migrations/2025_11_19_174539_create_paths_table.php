@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title')->unique(); // عنوان المسار
             $table->text('description')->nullable(); // وصف المسار
-            $table->json('tips')->nullable(); // نصائح بصيغة JSON
+            $table->string('photo')->nullable();
             $table->timestamps();
         });
     }

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePathRequest;
+use App\Http\Requests\UpdatePathRequest;
+use App\Http\Resources\PathResource;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Course;
@@ -10,6 +13,7 @@ use App\Models\Path;
 use App\Models\Comment;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -278,18 +282,35 @@ class UserController extends Controller
     }
 
     // ----------------- إدارة المسارات -----------------
-    public function storePath(Request $request)
+    public function storePath(StorePathRequest $request)
     {
-        $request->validate(['title' => 'required|string|max:255']);
-        $path = Path::create($request->only('title'));
-        return response()->json(['message' => 'Path created successfully', 'data' => $path], 201);
+       $data = $request->validated();
+
+            // 📸 رفع الصورة إن وجدت
+            if ($request->hasFile('photo')) {
+                $data['photo'] = $request->file('photo')->store('paths', 'public');
+            }
+
+            $path = Path::create($data);
+            return new PathResource($path);
+
+
     }
 
-    public function updatePath(Request $request, Path $path)
+    public function updatePath(UpdatePathRequest $request, Path $path)
     {
-        $request->validate(['title' => 'required|string|max:255']);
-        $path->update($request->only('title'));
-        return response()->json(['message' => 'Path updated successfully', 'data' => $path]);
+         $data = $request->validated();
+
+        if ($request->hasFile('photo')) {
+            if ($path->photo) {
+                Storage::disk('public')->delete($path->photo);
+            }
+            $data['photo'] = $request->file('photo')->store('paths', 'public');
+        }
+
+        $path->update($data);
+
+        return new PathResource($path);
     }
 
     public function destroyPath(Path $path)

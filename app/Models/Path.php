@@ -11,7 +11,7 @@ class Path extends Model
     protected $fillable = [
         'title',       
         'description', 
-        'tips'         
+        'photo'         
     ];
 
     //---------------- التحويلات (Casting) -----------------
