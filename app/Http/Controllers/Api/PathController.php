@@ -9,27 +9,27 @@ use App\Models\Path;
 
 class PathController extends Controller
 {
-    
+
     //-----------------------عرض جميع المسارات (Paths)-------------
-     
+
     public function index()
     {
         return response()->json(Path::all());
     }
 
-    
+
     //-------------------------عرض تفاصيل مسار محدد-------------------
-   
-    public function show(Path $path)
+   public function show(Path $path)
     {
-    return new PathResource(
-        $path->load('courses')
-    );
+        return new PathResource(
+            $path->load('courses.teacher')
+        );
     }
 
-    
+
+
     //-----------------------------إنشاء مسار جديد---------------------
-    
+
     public function store(Request $request)
     {
         $request->validate([
@@ -50,9 +50,9 @@ class PathController extends Controller
         ], 201);
     }
 
-    
+
     //-----------------------------تعديل بيانات مسار موجود------------------------
-    
+
     public function update(Request $request, Path $path)
     {
         $request->validate([
@@ -73,18 +73,30 @@ class PathController extends Controller
         ]);
     }
 
-    
+
     //-----------------------حذف مسار----------------
-     
-   public function destroy(Path $path)
-{
-    $path->courses()->delete();
 
-    $path->delete();
+        public function destroy(Path $path)
+        {
+            $path->courses()->delete();
 
-    return response()->json([
-        'message' => 'Path and its courses deleted successfully'
-    ]);
-}
+            $path->delete();
+
+            return response()->json([
+                'message' => 'Path and its courses deleted successfully'
+            ]);
+        }
+
+
+            public function course(Path $path)
+    {
+        $courses = $path->courses()->select('id', 'title', 'description', 'price', 'photo')->get();
+
+        return response()->json([
+            'path_id' => $path->id,
+            'path_title' => $path->title,
+            'courses' => $courses
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
 
 }

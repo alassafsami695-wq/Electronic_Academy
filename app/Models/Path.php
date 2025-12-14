@@ -9,9 +9,9 @@ class Path extends Model
 {
     //---------------- الحقول القابلة للتعبئة -----------------
     protected $fillable = [
-        'title',       
-        'description', 
-        'photo'         
+        'title',
+        'description',
+        'photo'
     ];
 
     //---------------- التحويلات (Casting) -----------------
@@ -22,6 +22,12 @@ class Path extends Model
     //---------------- العلاقة مع الكورسات -----------------
     public function courses(): HasMany
     {
-        return $this->hasMany(Course::class); 
+        return $this->hasMany(Course::class);
     }
+
+        public function course()
+    {
+        return $this->hasMany(Course::class);
+    }
+
 }

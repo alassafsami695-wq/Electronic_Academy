@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Teacher;
 
+use App\Services\QuestionGenerationService;
 use App\Http\Controllers\Controller;
 use App\Models\Lesson;
 use App\Models\Course;
@@ -11,6 +12,13 @@ use App\Http\Requests\UpdateLessonRequest;
 
 class LessonController extends Controller
 {
+    protected $questionService;
+
+    public function __construct(QuestionGenerationService $questionService)
+    {
+        $this->questionService = $questionService;
+    }
+
     // ----------------------------- عرض جميع الدروس داخل كورس -----------------------------
     public function index(Course $course)
     {
@@ -19,20 +27,18 @@ class LessonController extends Controller
     }
 
     // ----------------------------- عرض درس واحد -----------------------------
-   
     public function show(Course $course, Lesson $lesson)
     {
         if ($lesson->course_id !== $course->id) {
-                return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
-            }
+            return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
+        }
 
         return new LessonResource(
             $lesson->load(['comments.user', 'comments.replies'])
         );
     }
 
-
-    // ----------------------------- إنشاء درس جديد (لا نعدل عليها) -----------------------------
+    // ----------------------------- إنشاء درس جديد -----------------------------
     public function store(Request $request, Course $course)
     {
         $request->validate([
@@ -65,15 +71,12 @@ class LessonController extends Controller
             return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
         }
 
-        // اجلب فقط الحقول المرسلة
         $data = $request->validated();
 
-        // تحديث الفيديو فقط إذا تم إرساله
         if ($request->hasFile('video_url')) {
             $data['video_url'] = $request->file('video_url')->store('lessons/videos', 'public');
         }
 
-        // تحديث الدرس
         $lesson->update($data);
 
         return (new LessonResource($lesson->fresh()))
@@ -90,5 +93,44 @@ class LessonController extends Controller
         $lesson->delete();
 
         return response()->json(['message' => 'تم حذف الدرس بنجاح']);
+    }
+
+    // ----------------------------- توليد أسئلة لدرس واحد -----------------------------
+    public function generateQuestions(Course $course, Lesson $lesson)
+    {
+        if ($lesson->course_id !== $course->id) {
+            return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
+        }
+
+        $questions = $this->questionService->generateQuestions($lesson->content);
+
+        return response()->json([
+            'lesson_id' => $lesson->id,
+            'lesson_title' => $lesson->title,
+            'questions' => $questions
+        ]);
+    }
+
+    // ----------------------------- توليد أسئلة لجميع الدروس داخل كورس -----------------------------
+    public function generateQuestionsForAllLessons(Course $course)
+    {
+        $lessons = $course->lessons()->orderBy('order')->get();
+        $allLessonsData = [];
+
+        foreach ($lessons as $lesson) {
+            $questions = $this->questionService->generateQuestions($lesson->content);
+
+            $allLessonsData[] = [
+                'lesson_id' => $lesson->id,
+                'lesson_title' => $lesson->title,
+                'questions' => $questions
+            ];
+        }
+
+        return response()->json([
+            'course_id' => $course->id,
+            'course_title' => $course->title,
+            'lessons' => $allLessonsData
+        ]);
     }
 }

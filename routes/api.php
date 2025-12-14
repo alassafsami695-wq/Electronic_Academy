@@ -8,15 +8,21 @@ use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Teacher\CourseController;
 use App\Http\Controllers\Api\Teacher\LessonController;
 use App\Http\Controllers\Api\Teacher\CommentController;
+use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\LessonQuestionController;
+
+// ------------------------- OPENAI QUESTIONS (Optional Public) -------------------------
+Route::post('/generate-questions', [QuestionController::class, 'generate']);
 
 // ------------------------- PATHS -------------------------
 Route::get('/paths', [PathController::class, 'index']);
 Route::get('/paths/{path}', [PathController::class, 'show']);
+Route::get('/paths/{path}/courses', [PathController::class, 'course']);
 Route::get('/courses/best-selling', [CourseController::class, 'bestSelling']);
 
 // ------------------------- AUTH -------------------------
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login'])->name('login'); 
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 
 // ------------------------- LOGOUT -------------------------
@@ -24,41 +30,43 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 
 // ------------------------- ADMIN ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.Admin'])->prefix('admin')->group(function () {
-    // قائمة المستخدمين
-    Route::get('users', [UserController::class, 'index']); // عرض حسب الدور
+
+    // Users
+    Route::get('users', [UserController::class, 'index']);
     Route::get('users/{user}', [UserController::class, 'show']);
 
-    // إدارة الطلاب
+    // Students
     Route::post('students', [UserController::class, 'storeStudent']);
     Route::post('students/{student}/update', [UserController::class, 'updateStudent']);
     Route::delete('students/{student}', [UserController::class, 'destroyStudent']);
 
-    // إدارة الأساتذة
+    // Teachers
     Route::post('teachers', [UserController::class, 'storeTeacher']);
     Route::post('teachers/{teacher}/update', [UserController::class, 'updateTeacher']);
     Route::delete('teachers/{teacher}', [UserController::class, 'destroyTeacher']);
 
-    // إدارة الأدمن (فقط Super Admin)
+    // Admins
     Route::post('admins', [UserController::class, 'storeAdmin']);
     Route::post('admins/{admin}/update', [UserController::class, 'updateAdmin']);
     Route::delete('admins/{admin}', [UserController::class, 'destroyAdmin']);
 
-    // إدارة المسارات
+    // Paths
     Route::post('paths', [UserController::class, 'storePath']);
     Route::post('paths/{path}/update', [UserController::class, 'updatePath']);
     Route::delete('paths/{path}', [UserController::class, 'destroyPath']);
 
-    // إدارة التعليقات
+    // Comments
     Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
 });
 
 // ------------------------- TEACHER ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(function () {
+
     // Paths
     Route::post('paths', [PathController::class, 'store']);
     Route::post('paths/{path}/update', [PathController::class, 'update']);
 
-    // Courses 
+    // Courses
     Route::get('courses', [CourseController::class, 'index']);
     Route::get('courses/{course}', [CourseController::class, 'show']);
     Route::post('courses', [CourseController::class, 'store']);
@@ -67,15 +75,20 @@ Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(funct
 
     // Lessons
     Route::get('courses/{course}/lessons', [LessonController::class, 'index']);
-    Route::get('courses/{course}/lessons/{lesson}', [LessonController::class, 'show']); 
+    Route::get('courses/{course}/lessons/{lesson}', [LessonController::class, 'show']);
     Route::post('courses/{course}/lessons', [LessonController::class, 'store']);
     Route::post('courses/{course}/lessons/{lesson}/update', [LessonController::class, 'update']);
     Route::delete('courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy']);
 
     // Lesson Comments
-    Route::get('courses/{course}/lessons/{lesson}/comments', [LessonController::class, 'comments']); 
+    Route::get('courses/{course}/lessons/{lesson}/comments', [LessonController::class, 'comments']);
     Route::post('courses/{course}/lessons/{lesson}/comments', [LessonController::class, 'addComment']);
-    Route::delete('courses/{course}/lessons/{lesson}/comments/{comment}', [LessonController::class, 'deleteComment']); 
+    Route::delete('courses/{course}/lessons/{lesson}/comments/{comment}', [LessonController::class, 'deleteComment']);
+
+    // ------------------------- AI Questions for Lessons -------------------------
+    Route::post('lessons/{lesson}/questions/generate', [LessonQuestionController::class, 'generateAndStore']);
+    Route::post('lessons/{lesson}/questions/store', [LessonQuestionController::class, 'store']);
+    Route::post('lessons/{lesson}/questions/submit', [LessonQuestionController::class, 'submitAnswers']);
 });
 
 // ------------------------- ADMIN OR TEACHER ROUTES -------------------------
@@ -84,12 +97,15 @@ Route::middleware(['auth:sanctum','is.AdminOrTeacher'])->group(function () {
     Route::delete('courses/{course}', [UserController::class, 'destroyCourse']);
 });
 
-// ------------------------- COMMENTS ROUTES -------------------------
+// ---// ------------------------- COMMENTS ROUTES -------------------------
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('comments', [CommentController::class, 'index']); 
+    Route::get('comments', [CommentController::class, 'index']);
     Route::get('comments/{id}', [CommentController::class, 'show']);
-    Route::post('comments', [CommentController::class, 'store']); 
-    Route::delete('comments/{comment}', [CommentController::class, 'destroy']); 
+    Route::post('comments', [CommentController::class, 'store']);
+    Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+
+    // ------------------------- STUDENT: Get Questions for a Lesson -------------------------
+    Route::get('lessons/{lesson}/questions', [LessonQuestionController::class, 'getQuestions']);
 });
 
 // ------------------------- JOB ROUTES -------------------------

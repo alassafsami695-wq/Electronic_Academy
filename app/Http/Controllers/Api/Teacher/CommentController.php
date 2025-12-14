@@ -86,7 +86,9 @@ class CommentController extends Controller
 
        return response()->json([
             'message' => 'Comment added successfully.',
-            'comment' => new CommentResource($comment)
+'comment' => new CommentResource(
+    $comment->fresh(['user', 'lesson', 'replies'])
+)
         ], 201);
 
     }
@@ -116,7 +118,7 @@ class CommentController extends Controller
     }
 
     // -------------------- حذف تعليق --------------------
-    public function destroy($id)
+   public function destroy($id)
     {
         $comment = Comment::findOrFail($id);
 
@@ -124,8 +126,13 @@ class CommentController extends Controller
             return response()->json(['message' => 'غير مسموح لك بحذف هذا التعليق'], 403);
         }
 
+        // حذف الردود أولاً
+        Comment::where('parent_id', $comment->id)->delete();
+
+        // ثم حذف التعليق الأصلي
         $comment->delete();
 
-        return response()->json(['message' => 'Comment deleted successfully.']);
+        return response()->json(['message' => 'Comment and its replies deleted successfully.']);
     }
+
 }
