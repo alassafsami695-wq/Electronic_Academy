@@ -19,13 +19,13 @@ class PathController extends Controller
 
     
     //-------------------------عرض تفاصيل مسار محدد-------------------
-   
-    public function show(Path $path)
+   public function show(Path $path)
     {
-    return new PathResource(
-        $path->load('courses')
-    );
+        return new PathResource(
+            $path->load('courses.teacher')
+        );
     }
+
 
     
     //-----------------------------إنشاء مسار جديد---------------------
