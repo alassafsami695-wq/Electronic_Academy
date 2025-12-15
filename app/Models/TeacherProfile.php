@@ -14,7 +14,10 @@ class TeacherProfile extends Model
         'instagram_url',
         'youtube_url',
         'github_url',
+        'address',
+        'phone_number',
     ];
+
 
 
     public function user()

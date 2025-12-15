@@ -84,4 +84,16 @@ class CourseController extends Controller
 
         return response()->json($courses);
     }
+    public function myCourses()
+    {
+        $user = auth()->user();
+
+        $courses = $user->enrolledCourses()->with('teacher')->get();
+
+        return response()->json([
+            'user_id' => $user->id,
+            'courses' => $courses
+        ]);
+    }
+
 }

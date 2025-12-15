@@ -7,11 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class TeacherProfileResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+ 
     public function toArray($request)
     {
         return [
@@ -21,6 +17,9 @@ class TeacherProfileResource extends JsonResource
             'youtube_url'  => $this->youtube_url,
             'github_url'   => $this->github_url,
             'photo'        => $this->photo ? asset('storage/' . $this->photo) : null,
+            'address'      => $this->address,
+            'phone_number' => $this->phone_number,
+
         ];
     }
 

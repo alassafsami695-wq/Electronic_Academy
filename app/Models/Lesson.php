@@ -38,4 +38,9 @@ class Lesson extends Model
         return $this->hasMany(Comment::class)
                     ->orderBy('created_at', 'desc');
     }
+        public function questions()
+    {
+        return $this->hasMany(Question::class);
+    }
+
 }

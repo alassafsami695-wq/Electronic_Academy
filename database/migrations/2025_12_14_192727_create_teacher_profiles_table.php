@@ -24,15 +24,18 @@ return new class extends Migration
             $table->string('youtube_url')->nullable();
             $table->string('github_url')->nullable();
             $table->string('photo')->nullable();
-
+            $table->string('address')->nullable();
+            $table->string('phone_number')->nullable();
 
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('teacher_profiles');
     }
-
 };

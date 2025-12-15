@@ -23,6 +23,9 @@ def main():
 
     client = Groq(api_key=api_key)
 
+    # Load model from .env
+    model = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+
     prompt = f"""
 استخدم النص التالي لإنشاء نوعين من الأسئلة باللغة العربية:
 1) أسئلة اختيار من متعدد
@@ -58,7 +61,7 @@ def main():
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model=model,
             messages=[
                 {"role": "user", "content": prompt}
             ],

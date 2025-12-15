@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Teacher\LessonController;
 use App\Http\Controllers\Api\Teacher\CommentController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\LessonQuestionController;
+use App\Http\Controllers\Api\teacher\PurchaseController;
 
 // ------------------------- OPENAI QUESTIONS -------------------------
 Route::post('/generate-questions', [QuestionController::class, 'generate']);
@@ -107,6 +108,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('comments/{id}', [CommentController::class, 'show']);
     Route::post('comments', [CommentController::class, 'store']);
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+
+       // شراء كورس
+    Route::post('courses/{course}/purchase', [PurchaseController::class, 'purchaseCourse']);
+
+    Route::get('/my-courses', [CourseController::class, 'myCourses']);
+
+
 
     // User Profile
     Route::get('profile', [ProfileController::class, 'show']);
