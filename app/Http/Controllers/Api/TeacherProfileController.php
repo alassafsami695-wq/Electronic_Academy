@@ -11,18 +11,34 @@ class TeacherProfileController extends Controller
 {
     public function show()
     {
-        return new TeacherProfileResource(auth()->user()->teacherProfile);
+        $user = auth()->user();
+
+        // إذا لم يكن لديه teacherProfile → أنشئ واحدًا
+        if (!$user->teacherProfile) {
+            $user->teacherProfile()->create([]);
+        }
+
+        return new TeacherProfileResource($user->teacherProfile);
     }
+
 
     
     public function update(TeacherProfileRequest $request)
     {
-        $profile = auth()->user()->teacherProfile;
+        $user = auth()->user();
+
+        // إذا لم يكن لديه teacherProfile → أنشئ واحدًا
+        if (!$user->teacherProfile) {
+            $user->teacherProfile()->create([]);
+        }
+
+        $profile = $user->teacherProfile;
 
         $profile->update($request->validated());
 
         return new TeacherProfileResource($profile->fresh());
     }
+
 
 }
 
