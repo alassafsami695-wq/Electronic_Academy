@@ -8,12 +8,14 @@ class TeacherProfile extends Model
 {
     protected $fillable = [
         'user_id',
+        'photo',
         'facebook_url',
         'linkedin_url',
         'instagram_url',
         'youtube_url',
         'github_url',
     ];
+
 
     public function user()
     {

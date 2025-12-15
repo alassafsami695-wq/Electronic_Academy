@@ -20,6 +20,7 @@ class TeacherProfileResource extends JsonResource
             'instagram_url'=> $this->instagram_url,
             'youtube_url'  => $this->youtube_url,
             'github_url'   => $this->github_url,
+            'photo'        => $this->photo ? asset('storage/' . $this->photo) : null,
         ];
     }
 

@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('instagram_url')->nullable();
             $table->string('youtube_url')->nullable();
             $table->string('github_url')->nullable();
+            $table->string('photo')->nullable();
+
 
             $table->timestamps();
         });

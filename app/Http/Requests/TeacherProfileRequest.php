@@ -27,6 +27,8 @@ class TeacherProfileRequest extends FormRequest
             'instagram_url'=> 'nullable|url',
             'youtube_url'  => 'nullable|url',
             'github_url'   => 'nullable|url',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+
         ];
     }
 

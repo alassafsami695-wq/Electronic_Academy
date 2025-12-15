@@ -16,6 +16,9 @@ use App\Http\Controllers\LessonQuestionController;
 // ------------------------- OPENAI QUESTIONS -------------------------
 Route::post('/generate-questions', [QuestionController::class, 'generate']);
 
+// ------------------------- PUBLIC TEACHER PROFILE -------------------------
+Route::get('/teachers/{id}', [TeacherProfileController::class, 'publicShow']);
+
 // ------------------------- PATHS -------------------------
 Route::get('/paths', [PathController::class, 'index']);
 Route::get('/paths/{path}', [PathController::class, 'show']);
@@ -57,7 +60,7 @@ Route::middleware(['auth:sanctum','is.Admin'])->prefix('admin')->group(function 
     Route::post('paths/{path}/update', [UserController::class, 'updatePath']);
     Route::delete('paths/{path}', [UserController::class, 'destroyPath']);
 
-    // Comments (Admin can delete any comment)
+    // Comments
     Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
 });
 
@@ -86,13 +89,11 @@ Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(funct
     Route::post('courses/{course}/lessons/{lesson}/update', [LessonController::class, 'update']);
     Route::delete('courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy']);
 
-
     // AI Questions
     Route::post('lessons/{lesson}/questions/generate', [LessonQuestionController::class, 'generateAndStore']);
     Route::post('lessons/{lesson}/questions/store', [LessonQuestionController::class, 'store']);
     Route::post('lessons/{lesson}/questions/submit', [LessonQuestionController::class, 'submitAnswers']);
 });
-
 
 // ------------------------- ADMIN OR TEACHER ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.AdminOrTeacher'])->group(function () {
@@ -100,7 +101,7 @@ Route::middleware(['auth:sanctum','is.AdminOrTeacher'])->group(function () {
     Route::delete('courses/{course}', [UserController::class, 'destroyCourse']);
 });
 
-// ------------------------- COMMENTS ROUTES (User can delete his own comment) -------------------------
+// ------------------------- COMMENTS ROUTES -------------------------
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('comments', [CommentController::class, 'index']);
     Route::get('comments/{id}', [CommentController::class, 'show']);
