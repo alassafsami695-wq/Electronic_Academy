@@ -320,11 +320,22 @@ class UserController extends Controller
     }
 
     // ----------------- إدارة التعليقات -----------------
-    public function destroyComment(Comment $comment)
-    {
-        $comment->delete();
-        return response()->json(['message' => 'Comment deleted successfully']);
-    }
+
+    // public function destroyComment(Comment $comment)
+    // {
+    //     // فقط الأدمن يستطيع الوصول لهذا الراوت، فلا حاجة لفحص الدور هنا
+
+    //     // حذف الردود أولاً إن وجدت
+    //     $comment->replies()->delete();
+
+    //     // حذف التعليق نفسه
+    //     $comment->delete();
+
+    //     return response()->json([
+    //         'message' => 'تم حذف التعليق بنجاح'
+    //     ]);
+    // }
+
 
     // ----------------- كورسات الطالب + التقدم -----------------
     public function getMyCourses()

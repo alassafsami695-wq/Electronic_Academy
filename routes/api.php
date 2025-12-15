@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\TeacherProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\PathController;
@@ -11,7 +13,7 @@ use App\Http\Controllers\Api\Teacher\CommentController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\LessonQuestionController;
 
-// ------------------------- OPENAI QUESTIONS (Optional Public) -------------------------
+// ------------------------- OPENAI QUESTIONS -------------------------
 Route::post('/generate-questions', [QuestionController::class, 'generate']);
 
 // ------------------------- PATHS -------------------------
@@ -55,12 +57,16 @@ Route::middleware(['auth:sanctum','is.Admin'])->prefix('admin')->group(function 
     Route::post('paths/{path}/update', [UserController::class, 'updatePath']);
     Route::delete('paths/{path}', [UserController::class, 'destroyPath']);
 
-    // Comments
+    // Comments (Admin can delete any comment)
     Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
 });
 
 // ------------------------- TEACHER ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(function () {
+
+    // Teacher Profile
+    Route::get('profile', [TeacherProfileController::class, 'show']);
+    Route::post('profile/update', [TeacherProfileController::class, 'update']);
 
     // Paths
     Route::post('paths', [PathController::class, 'store']);
@@ -80,16 +86,13 @@ Route::middleware(['auth:sanctum','is.Teacher'])->prefix('teacher')->group(funct
     Route::post('courses/{course}/lessons/{lesson}/update', [LessonController::class, 'update']);
     Route::delete('courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy']);
 
-    // Lesson Comments
-    Route::get('courses/{course}/lessons/{lesson}/comments', [LessonController::class, 'comments']);
-    Route::post('courses/{course}/lessons/{lesson}/comments', [LessonController::class, 'addComment']);
-    Route::delete('courses/{course}/lessons/{lesson}/comments/{comment}', [LessonController::class, 'deleteComment']);
 
-    // ------------------------- AI Questions for Lessons -------------------------
+    // AI Questions
     Route::post('lessons/{lesson}/questions/generate', [LessonQuestionController::class, 'generateAndStore']);
     Route::post('lessons/{lesson}/questions/store', [LessonQuestionController::class, 'store']);
     Route::post('lessons/{lesson}/questions/submit', [LessonQuestionController::class, 'submitAnswers']);
 });
+
 
 // ------------------------- ADMIN OR TEACHER ROUTES -------------------------
 Route::middleware(['auth:sanctum','is.AdminOrTeacher'])->group(function () {
@@ -97,14 +100,18 @@ Route::middleware(['auth:sanctum','is.AdminOrTeacher'])->group(function () {
     Route::delete('courses/{course}', [UserController::class, 'destroyCourse']);
 });
 
-// ---// ------------------------- COMMENTS ROUTES -------------------------
+// ------------------------- COMMENTS ROUTES (User can delete his own comment) -------------------------
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('comments', [CommentController::class, 'index']);
     Route::get('comments/{id}', [CommentController::class, 'show']);
     Route::post('comments', [CommentController::class, 'store']);
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
 
-    // ------------------------- STUDENT: Get Questions for a Lesson -------------------------
+    // User Profile
+    Route::get('profile', [ProfileController::class, 'show']);
+    Route::post('profile/update', [ProfileController::class, 'update']);
+
+    // Student Questions
     Route::get('lessons/{lesson}/questions', [LessonQuestionController::class, 'getQuestions']);
 });
 

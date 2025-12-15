@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CommentResource;
-use App\Models\Lesson;
 use App\Models\Comment;
 use App\Notifications\NewCommentNotification;
 use Illuminate\Http\Request;
@@ -13,6 +12,7 @@ class CommentController extends Controller
 {
     public function __construct()
     {
+        // جميع العمليات تتطلب تسجيل دخول
         $this->middleware('auth:sanctum');
     }
 
@@ -28,13 +28,12 @@ class CommentController extends Controller
             ->with([
                 'user:id,name,email',
                 'replies.user:id,name,email',
-                'replies.replies.user:id,name,email' // دعم الردود المتداخلة
+                'replies.replies.user:id,name,email'
             ])
             ->orderBy('created_at', 'desc')
             ->get();
 
         return CommentResource::collection($comments);
-
     }
 
     // -------------------- عرض تعليق واحد مع كل الردود --------------------
@@ -49,8 +48,7 @@ class CommentController extends Controller
             'lesson.course.teacher:id,name,email'
         ])->findOrFail($id);
 
-       return new CommentResource($comment);
-
+        return new CommentResource($comment);
     }
 
     // -------------------- إضافة تعليق أو رد --------------------
@@ -62,6 +60,7 @@ class CommentController extends Controller
             'parent_id' => 'nullable|exists:comments,id',
         ]);
 
+        // الردود مسموحة فقط للأساتذة
         if ($request->filled('parent_id') && !auth()->user()->isTeacher()) {
             return response()->json(['message' => 'مسموح للأساتذة فقط بالرد'], 403);
         }
@@ -73,7 +72,7 @@ class CommentController extends Controller
             'parent_id' => $request->parent_id,
         ]);
 
-        // إخطار الأستاذ
+        // إخطار الأستاذ عند تعليق جديد من مستخدم
         if (
             !$request->filled('parent_id') &&
             $comment->lesson &&
@@ -84,13 +83,12 @@ class CommentController extends Controller
             $teacher->notify(new NewCommentNotification($comment));
         }
 
-       return response()->json([
-            'message' => 'Comment added successfully.',
-'comment' => new CommentResource(
-    $comment->fresh(['user', 'lesson', 'replies'])
-)
+        return response()->json([
+            'message' => 'تم إضافة التعليق بنجاح.',
+            'comment' => new CommentResource(
+                $comment->fresh(['user', 'lesson', 'replies'])
+            )
         ], 201);
-
     }
 
     // -------------------- تعديل تعليق --------------------
@@ -102,6 +100,7 @@ class CommentController extends Controller
 
         $comment = Comment::findOrFail($id);
 
+        // السماح فقط لصاحب التعليق أو الأستاذ
         if ($comment->user_id !== auth()->id() && !auth()->user()->isTeacher()) {
             return response()->json(['message' => 'غير مسموح لك بتعديل هذا التعليق'], 403);
         }
@@ -111,28 +110,28 @@ class CommentController extends Controller
         ]);
 
         return response()->json([
-        'message' => 'Comment added successfully.',
-        'comment' => new CommentResource($comment)
-    ], 200);
-
+            'message' => 'تم تعديل التعليق بنجاح.',
+            'comment' => new CommentResource($comment->fresh(['user']))
+        ]);
     }
 
     // -------------------- حذف تعليق --------------------
-   public function destroy($id)
+    public function destroy(Comment $comment)
     {
-        $comment = Comment::findOrFail($id);
-
-        if ($comment->user_id !== auth()->id() && !auth()->user()->isTeacher()) {
+        // السماح فقط لصاحب التعليق أو الأستاذ أو الأدمن
+        if (
+            $comment->user_id !== auth()->id() &&
+            !auth()->user()->isTeacher() &&
+            !auth()->user()->isAdmin()
+        ) {
             return response()->json(['message' => 'غير مسموح لك بحذف هذا التعليق'], 403);
         }
 
-        // حذف الردود أولاً
-        Comment::where('parent_id', $comment->id)->delete();
-
-        // ثم حذف التعليق الأصلي
+        $comment->replies()->delete();
         $comment->delete();
 
-        return response()->json(['message' => 'Comment and its replies deleted successfully.']);
+        return response()->json([
+            'message' => 'تم حذف التعليق والردود التابعة بنجاح.'
+        ]);
     }
-
 }
