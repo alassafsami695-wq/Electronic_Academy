@@ -11,19 +11,13 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('lesson_id')->constrained()->onDelete('cascade');
             $table->timestamp('completed_at')->nullable();
-            $table->unique(['user_id','lesson_id']);
             $table->timestamps();
 
-            $table->index(['lesson_id', 'user_id']);
-            $table->index('user_id');
+            $table->unique(['user_id','lesson_id']);
         });
     }
 
-    public function down(): void
-    {
-        Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('lesson_completions');   // ✅ الجدول الصحيح
-        Schema::enableForeignKeyConstraints();
+    public function down(): void {
+        Schema::dropIfExists('lesson_completions');
     }
-
 };

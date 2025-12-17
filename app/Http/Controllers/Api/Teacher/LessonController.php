@@ -133,4 +133,20 @@ class LessonController extends Controller
             'lessons' => $allLessonsData
         ]);
     }
+
+    // ----------------------------- تعليم درس كمكتمل -----------------------------
+    public function completeLesson(Lesson $lesson)
+    {
+        $user = auth()->user();
+
+        $user->completedLessons()->syncWithoutDetaching([
+            $lesson->id => ['completed_at' => now()]
+        ]);
+
+        return response()->json([
+            'message' => 'تم تعليم الدرس كمكتمل بنجاح',
+            'lesson_id' => $lesson->id,
+            'completed_at' => now(),
+        ]);
+    }
 }

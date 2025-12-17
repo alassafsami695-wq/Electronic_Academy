@@ -5,7 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Comment;
+use App\Models\Question;
+use App\Models\User;
 
 class Lesson extends Model
 {
@@ -38,9 +41,18 @@ class Lesson extends Model
         return $this->hasMany(Comment::class)
                     ->orderBy('created_at', 'desc');
     }
-        public function questions()
+
+    //---------------- الأسئلة المرتبطة بالدرس -----------------
+    public function questions(): HasMany
     {
         return $this->hasMany(Question::class);
     }
 
+    //---------------- المستخدمون الذين أكملوا هذا الدرس -----------------
+    public function completedByUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'lesson_completions')
+                    ->withPivot('completed_at')
+                    ->withTimestamps();
+    }
 }

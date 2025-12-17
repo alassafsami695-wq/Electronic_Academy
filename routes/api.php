@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\Teacher\LessonController;
 use App\Http\Controllers\Api\Teacher\CommentController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\LessonQuestionController;
-use App\Http\Controllers\Api\teacher\PurchaseController;
+use App\Http\Controllers\Api\Teacher\PurchaseController;
 
 // ------------------------- OPENAI QUESTIONS -------------------------
 Route::post('/generate-questions', [QuestionController::class, 'generate']);
@@ -102,19 +102,23 @@ Route::middleware(['auth:sanctum','is.AdminOrTeacher'])->group(function () {
     Route::delete('courses/{course}', [UserController::class, 'destroyCourse']);
 });
 
-// ------------------------- COMMENTS ROUTES -------------------------
+// ------------------------- AUTHENTICATED USER ROUTES -------------------------
 Route::middleware('auth:sanctum')->group(function () {
+
+    // Comments
     Route::get('comments', [CommentController::class, 'index']);
     Route::get('comments/{id}', [CommentController::class, 'show']);
     Route::post('comments', [CommentController::class, 'store']);
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
 
-       // شراء كورس
+    // شراء كورس
     Route::post('courses/{course}/purchase', [PurchaseController::class, 'purchaseCourse']);
 
-    Route::get('/my-courses', [CourseController::class, 'myCourses']);
+    // قائمة مشترياتي
+    Route::get('my-courses', [CourseController::class, 'myCourses']);
 
-
+    // إكمال درس
+    Route::post('lessons/{lesson}/complete', [LessonController::class, 'completeLesson']);
 
     // User Profile
     Route::get('profile', [ProfileController::class, 'show']);

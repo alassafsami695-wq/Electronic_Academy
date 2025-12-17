@@ -17,11 +17,15 @@ return new class extends Migration {
 
             $table->decimal('price', 8, 2)->default(0);
 
+            // مدة الكورس (يمكن أن تكون مثلاً "3 ساعات" أو "120 دقيقة")
             $table->string('course_duration')->nullable();
 
             $table->unsignedInteger('number_of_students')->default(0);
 
             $table->decimal('rating', 3, 2)->default(0);
+
+            // عدد المبيعات لاستخدامه في best-selling
+            $table->unsignedInteger('sales_count')->default(0);
 
             $table->foreignId('teacher_id')
                   ->constrained('users')

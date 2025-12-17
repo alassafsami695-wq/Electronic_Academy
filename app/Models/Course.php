@@ -53,11 +53,14 @@ class Course extends Model
     {
         $user = Auth::user();
 
+        // إذا لم يكن هناك مستخدم أو لا توجد دروس في الكورس
         if (!$user || $this->lessons->isEmpty()) {
             return 0.0;
         }
 
         $totalLessons = $this->lessons->count(); 
+
+        // حساب عدد الدروس المكتملة من جدول lesson_completions
         $completedLessonsCount = $user->completedLessons()
             ->whereIn('lesson_id', $this->lessons->pluck('id'))
             ->count(); 
@@ -66,7 +69,7 @@ class Course extends Model
             return 0.0;
         }
 
-        // حساب نسبة التقدم بدقة (من 0 إلى 100)
+        // نسبة التقدم بدقة (0 - 100)
         return round(($completedLessonsCount / $totalLessons) * 100, 2);
     }
 

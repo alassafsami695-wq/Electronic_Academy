@@ -45,17 +45,17 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-
-    public function profile()
+    //--------------------- ملف التعريف العادي -------------------
+    public function profile(): HasOne
     {
         return $this->hasOne(Profile::class);
     }
 
-    public function teacherProfile()
+    //--------------------- ملف المدرّس -------------------
+    public function teacherProfile(): HasOne
     {
         return $this->hasOne(TeacherProfile::class);
     }
-
 
     //--------------------------- علاقة المحفظة ----------------------
     public function wallet(): HasOne
@@ -63,13 +63,13 @@ class User extends Authenticatable
         return $this->hasOne(Wallet::class);
     }
 
-    //------------------------------- الكورسات التي يدرسها المستخدم ------------------------
+    //------------------------------- الكورسات التي يدرسها المستخدم (كمعلّم) ------------------------
     public function courses()
     {
         return $this->hasMany(Course::class, 'teacher_id');
     }
 
-    //----------------------------- الكورسات التي يشترك بها المستخدم ----------------------
+    //----------------------------- الكورسات التي يشترك بها المستخدم (كطالب) ----------------------
     public function enrolledCourses(): BelongsToMany
     {
         return $this->belongsToMany(Course::class, 'course_user')
@@ -85,7 +85,7 @@ class User extends Authenticatable
     //----------------------------- الدروس المكتملة ---------------------
     public function completedLessons(): BelongsToMany
     {
-        // ✅ اسم الجدول الصحيح هو lesson_completions
+        // ✅ جدول تتبع الدروس المكتملة lesson_completions
         return $this->belongsToMany(Lesson::class, 'lesson_completions')
                     ->withPivot('completed_at') // وقت إكمال الدرس
                     ->withTimestamps();         // وقت الإنشاء والتحديث
