@@ -9,33 +9,42 @@ use App\Models\Path;
 
 class PathController extends Controller
 {
-
-    //-----------------------عرض جميع المسارات (Paths)-------------
-
+    // عرض جميع المسارات
     public function index()
     {
-        return response()->json(Path::all());
+        return Path::all();
     }
 
-
-    //-------------------------عرض تفاصيل مسار محدد-------------------
+    // عرض تفاصيل مسار مع الكورسات والتحقق من الاشتراك
     public function show(Path $path)
     {
         $path->load(['courses.teacher', 'courses.lessons']);
 
         $user = auth()->user();
+
         if ($user) {
-            $user->load('enrolledCourses');
+            $enrolledCourseIds = $user->enrolledCourses()->pluck('courses.id')->toArray();
+
+            $path->courses->each(function ($course) use ($enrolledCourseIds) {
+                $course->is_enrolled = in_array($course->id, $enrolledCourseIds);
+            });
+        } else {
+            $path->courses->each(function ($course) {
+                $course->is_enrolled = false;
+            });
         }
 
         return new PathResource($path);
     }
 
+    // عرض المسار للعامة
+    public function publicShow(Path $path)
+    {
+        $path->load(['courses.teacher', 'courses.lessons']);
+        return new PathResource($path);
+    }
 
-
-
-    //-----------------------------إنشاء مسار جديد---------------------
-
+    // إنشاء مسار جديد
     public function store(Request $request)
     {
         $request->validate([
@@ -56,9 +65,7 @@ class PathController extends Controller
         ], 201);
     }
 
-
-    //-----------------------------تعديل بيانات مسار موجود------------------------
-
+    // تعديل مسار
     public function update(Request $request, Path $path)
     {
         $request->validate([
@@ -79,30 +86,26 @@ class PathController extends Controller
         ]);
     }
 
+    // حذف مسار والكورسات التابعة له
+    public function destroy(Path $path)
+    {
+        $path->courses()->delete();
+        $path->delete();
 
-    //-----------------------حذف مسار----------------
+        return response()->json([
+            'message' => 'Path and its courses deleted successfully'
+        ]);
+    }
 
-        public function destroy(Path $path)
-        {
-            $path->courses()->delete();
-
-            $path->delete();
-
-            return response()->json([
-                'message' => 'Path and its courses deleted successfully'
-            ]);
-        }
-
-
-            public function course(Path $path)
+    // جلب الكورسات ضمن المسار
+    public function course(Path $path)
     {
         $courses = $path->courses()->select('id', 'title', 'description', 'price', 'photo')->get();
 
         return response()->json([
-            'path_id' => $path->id,
+            'path_id'    => $path->id,
             'path_title' => $path->title,
-            'courses' => $courses
+            'courses'    => $courses
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
-
 }

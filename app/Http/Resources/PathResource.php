@@ -2,30 +2,36 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\CourseSummaryResource;
-
+use App\Http\Resources\CourseResource;
 
 class PathResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
+    public function toArray($request)
     {
-        return [
-            'id'          => $this->id,
-            'title'       => $this->title,
-            'description' => $this->description,
-            'photo'       => $this->photo ? asset('storage/' . $this->photo) : null,
-            'created_at'  => $this->created_at,
-            'updated_at'  => $this->updated_at,
-            'courses'     => CourseResource::collection($this->whenLoaded('courses')),
+        $user = auth()->user();
+        $enrolledCourseIds = $user ? $user->enrolledCourses()->pluck('courses.id')->toArray() : [];
 
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'description' => $this->description,
+            'courses' => $this->courses->map(function($course) use ($enrolledCourseIds) {
+                return [
+                    'id' => $course->id,
+                    'title' => $course->title,
+                    'description' => $course->description,
+                    'price' => $course->price,
+                    'photo' => $course->photo ? asset('storage/' . $course->photo) : null,
+                    'is_enrolled' => in_array($course->id, $enrolledCourseIds),
+                    'progress' => in_array($course->id, $enrolledCourseIds) ? $course->progress_percentage : 0,
+                    'teacher' => $course->teacher ? [
+                        'id' => $course->teacher->id,
+                        'name' => $course->teacher->name,
+                        'email' => $course->teacher->email,
+                    ] : null,
+                ];
+            }),
         ];
-        
     }
 }

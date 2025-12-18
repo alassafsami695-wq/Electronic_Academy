@@ -24,14 +24,8 @@ class LessonController extends Controller
     {
         $user = auth()->user();
 
-        // Teacher → لا يرى إلا دروس كورساته فقط
-        if ($user->role === 'Teacher' && $course->teacher_id !== $user->id) {
+        if ($course->teacher_id !== $user->id) {
             return response()->json(['message' => 'غير مصرح لك بمشاهدة دروس هذا الكورس'], 403);
-        }
-
-        // Admin → يمكنه رؤية أي دروس لأي كورس (إن وصل لهذا المسار)
-        if ($user->role !== 'Teacher' && $user->role !== 'Admin') {
-            return response()->json(['message' => 'غير مصرح لك بمشاهدة الدروس'], 403);
         }
 
         $lessons = $course->lessons()->orderBy('order')->get();
@@ -48,13 +42,7 @@ class LessonController extends Controller
             return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
         }
 
-        // Teacher → لا يرى إلا دروس كورساته
-        if ($user->role === 'Teacher' && $course->teacher_id !== $user->id) {
-            return response()->json(['message' => 'غير مصرح لك بمشاهدة هذا الدرس'], 403);
-        }
-
-        // Admin → يمكنه مشاهدة أي درس (إن وصل لهذا المسار)
-        if ($user->role !== 'Teacher' && $user->role !== 'Admin') {
+        if ($course->teacher_id !== $user->id) {
             return response()->json(['message' => 'غير مصرح لك بمشاهدة هذا الدرس'], 403);
         }
 
@@ -68,8 +56,7 @@ class LessonController extends Controller
     {
         $user = auth()->user();
 
-        // فقط المدرّس صاحب الكورس يمكنه إضافة درس
-        if ($user->role !== 'Teacher' || $course->teacher_id !== $user->id) {
+        if ($course->teacher_id !== $user->id) {
             return response()->json(['message' => 'غير مصرح لك بإنشاء درس لهذا الكورس'], 403);
         }
 
@@ -105,16 +92,8 @@ class LessonController extends Controller
             return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
         }
 
-        // Teacher → يمكنه تعديل فقط دروس كورساته
-        if ($user->role === 'Teacher') {
-            if ($course->teacher_id !== $user->id) {
-                return response()->json(['message' => 'غير مصرح لك بتعديل هذا الدرس'], 403);
-            }
-        }
-
-        // Admin → ممنوع التعديل حسب طلبك
-        if ($user->role === 'Admin') {
-            return response()->json(['message' => 'الأدمن لا يمكنه تعديل الدروس'], 403);
+        if ($course->teacher_id !== $user->id) {
+            return response()->json(['message' => 'غير مصرح لك بتعديل هذا الدرس'], 403);
         }
 
         $data = $request->validated();
@@ -138,15 +117,7 @@ class LessonController extends Controller
             return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
         }
 
-        // Teacher → يحذف فقط دروس كورساته
-        if ($user->role === 'Teacher') {
-            if ($course->teacher_id !== $user->id) {
-                return response()->json(['message' => 'غير مصرح لك بحذف هذا الدرس'], 403);
-            }
-        }
-
-        // Admin → يمكنه حذف أي درس
-        if ($user->role !== 'Teacher' && $user->role !== 'Admin') {
+        if ($course->teacher_id !== $user->id) {
             return response()->json(['message' => 'غير مصرح لك بحذف هذا الدرس'], 403);
         }
 
@@ -164,8 +135,7 @@ class LessonController extends Controller
             return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
         }
 
-        // Teacher صاحب الكورس فقط
-        if ($user->role !== 'Teacher' || $course->teacher_id !== $user->id) {
+        if ($course->teacher_id !== $user->id) {
             return response()->json(['message' => 'غير مصرح لك بتوليد أسئلة لهذا الدرس'], 403);
         }
 
@@ -183,8 +153,7 @@ class LessonController extends Controller
     {
         $user = auth()->user();
 
-        // Teacher صاحب الكورس فقط
-        if ($user->role !== 'Teacher' || $course->teacher_id !== $user->id) {
+        if ($course->teacher_id !== $user->id) {
             return response()->json(['message' => 'غير مصرح لك بتوليد أسئلة لهذا الكورس'], 403);
         }
 
@@ -208,12 +177,11 @@ class LessonController extends Controller
         ]);
     }
 
-    // ----------------------------- تعليم درس كمكتمل -----------------------------
+    // ----------------------------- تعليم درس كمكتمل (طالب) -----------------------------
     public function completeLesson(Lesson $lesson)
     {
         $user = auth()->user();
 
-        // هنا المنطق يخص الطالب الذي يكمل الدرس، وليس المدرّس
         $user->completedLessons()->syncWithoutDetaching([
             $lesson->id => ['completed_at' => now()]
         ]);

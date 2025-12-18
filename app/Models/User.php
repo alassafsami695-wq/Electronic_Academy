@@ -70,11 +70,12 @@ class User extends Authenticatable
     }
 
     //----------------------------- الكورسات التي يشترك بها المستخدم (كطالب) ----------------------
-    public function enrolledCourses(): BelongsToMany
+   public function enrolledCourses(): BelongsToMany
     {
-        return $this->belongsToMany(Course::class, 'course_user')
+        return $this->belongsToMany(Course::class, 'course_user', 'user_id', 'course_id')
                     ->withTimestamps();
     }
+
 
     //----------------------------- التعليقات التي كتبها المستخدم --------------------------
     public function comments()
