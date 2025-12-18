@@ -18,6 +18,9 @@ return new class extends Migration {
             // ترتيب الدرس داخل الكورس
             $table->unsignedInteger('order');
 
+            // مدة الدرس بالدقائق
+            $table->unsignedInteger('duration')->default(0);
+
             // رابط أو مسار الفيديو
             $table->string('video_url')->nullable();
 

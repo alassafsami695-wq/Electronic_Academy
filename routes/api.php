@@ -135,3 +135,5 @@ Route::prefix('job-listings')->group(function () {
     Route::post('/', [JobListingController::class, 'store']);
     Route::delete('/{job}', [JobListingController::class, 'destroy']);
 });
+// ------------------------- PUBLIC COURSE INFO -------------------------
+Route::get('/courses/{course}', [CourseController::class, 'publicShow']);

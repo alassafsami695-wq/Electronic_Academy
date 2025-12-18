@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
-use App\Models\User;
 use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
 use App\Http\Resources\CourseResource;
+use App\Http\Resources\PublicCourseResource;
 use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
@@ -37,12 +37,18 @@ class CourseController extends Controller
         return new CourseResource($course);
     }
 
-    // ----------------------------- عرض كورس واحد -----------------------------
+    // ----------------------------- عرض كورس واحد (للمدرّس) -----------------------------
     public function show(Course $course)
     {
         return new CourseResource(
             $course->load(['teacher', 'path', 'lessons'])
         );
+    }
+
+    // ----------------------------- عرض معلومات عامة عن الكورس (بدون اشتراك) -----------------------------
+    public function publicShow(Course $course)
+    {
+        return new PublicCourseResource($course);
     }
 
     // ----------------------------- تعديل كورس -----------------------------
