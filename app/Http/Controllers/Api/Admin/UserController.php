@@ -275,11 +275,24 @@ class UserController extends Controller
         return response()->json(['data' => $courses]);
     }
 
-    public function destroyCourse(Course $course)
+   public function destroyCourse(Course $course)
     {
+        $user = auth()->user();
+
+        // فقط الأدمن يمكنه حذف كورسات المدرّسين
+        if (!$user->hasRole('Admin')) {
+            return response()->json(['message' => 'غير مصرح لك بحذف هذا الكورس'], 403);
+        }
+
+        if ($course->photo) {
+            Storage::disk('public')->delete($course->photo);
+        }
+
         $course->delete();
-        return response()->json(['message' => 'Course deleted successfully']);
+
+        return response()->json(['message' => 'تم حذف الكورس بنجاح بواسطة الأدمن']);
     }
+
 
     // ----------------- إدارة المسارات -----------------
     public function storePath(StorePathRequest $request)

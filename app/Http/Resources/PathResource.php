@@ -4,6 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\CourseSummaryResource;
+
 
 class PathResource extends JsonResource
 {
@@ -22,6 +24,7 @@ class PathResource extends JsonResource
             'created_at'  => $this->created_at,
             'updated_at'  => $this->updated_at,
             'courses'     => CourseResource::collection($this->whenLoaded('courses')),
+
         ];
         
     }

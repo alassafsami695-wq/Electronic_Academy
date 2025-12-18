@@ -19,12 +19,18 @@ class PathController extends Controller
 
 
     //-------------------------عرض تفاصيل مسار محدد-------------------
-   public function show(Path $path)
+    public function show(Path $path)
     {
-        return new PathResource(
-            $path->load('courses.teacher')
-        );
+        $path->load(['courses.teacher', 'courses.lessons']);
+
+        $user = auth()->user();
+        if ($user) {
+            $user->load('enrolledCourses');
+        }
+
+        return new PathResource($path);
     }
+
 
 
 

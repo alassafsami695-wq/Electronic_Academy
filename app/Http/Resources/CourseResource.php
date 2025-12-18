@@ -9,6 +9,10 @@ class CourseResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        // هل المستخدم مشترك في هذا الكورس؟
+        $isEnrolled = auth()->check()
+            && auth()->user()->enrolledCourses->contains($this->id);
+
         return [
 
             //---------------- معلومات أساسية عن الكورس ----------------
@@ -17,9 +21,9 @@ class CourseResource extends JsonResource
             'description'        => $this->description,
 
             //---------------- صورة الكورس ----------------
-            'photo'              => $this->photo 
-                                    ? asset('storage/' . $this->photo) 
-                                    : null,
+            'photo'              => $this->photo
+                                        ? asset('storage/' . $this->photo)
+                                        : null,
 
             //---------------- بيانات إضافية ----------------
             'price'              => $this->price,
@@ -27,8 +31,10 @@ class CourseResource extends JsonResource
             'number_of_students' => $this->number_of_students,
             'rating'             => $this->rating,
 
-            //---------------- نسبة التقدم (إن وُجد مستخدم) ----------------
-            // يتم حسابها من Accessor داخل موديل Course
+            //---------------- هل المستخدم مشترك؟ ----------------
+            'is_enrolled'        => $isEnrolled,
+
+            //---------------- نسبة التقدم ----------------
             'progress'           => $this->when(
                                         auth()->check(),
                                         fn() => $this->progress_percentage
