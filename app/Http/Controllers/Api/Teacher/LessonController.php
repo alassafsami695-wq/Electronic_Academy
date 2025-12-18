@@ -24,7 +24,8 @@ class LessonController extends Controller
     {
         $user = auth()->user();
 
-        if ($course->teacher_id !== $user->id) {
+        // Teacher أو Admin فقط
+        if ($course->teacher_id !== $user->id && !$user->isAdmin()) {
             return response()->json(['message' => 'غير مصرح لك بمشاهدة دروس هذا الكورس'], 403);
         }
 
@@ -42,13 +43,16 @@ class LessonController extends Controller
             return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
         }
 
-        if ($course->teacher_id !== $user->id) {
-            return response()->json(['message' => 'غير مصرح لك بمشاهدة هذا الدرس'], 403);
+        // Teacher صاحب الكورس أو Admin أو طالب مشترك → يسمح
+        if (
+            $course->teacher_id === $user->id ||
+            $user->isAdmin() ||
+            $user->enrolledCourses->contains($course->id)
+        ) {
+            return new LessonResource($lesson->load(['comments.user', 'comments.replies']));
         }
 
-        return new LessonResource(
-            $lesson->load(['comments.user', 'comments.replies'])
-        );
+        return response()->json(['message' => 'غير مصرح لك بمشاهدة هذا الدرس'], 403);
     }
 
     // ----------------------------- إنشاء درس جديد -----------------------------
@@ -56,6 +60,7 @@ class LessonController extends Controller
     {
         $user = auth()->user();
 
+        // Teacher فقط
         if ($course->teacher_id !== $user->id) {
             return response()->json(['message' => 'غير مصرح لك بإنشاء درس لهذا الكورس'], 403);
         }
@@ -92,6 +97,7 @@ class LessonController extends Controller
             return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
         }
 
+        // Teacher فقط
         if ($course->teacher_id !== $user->id) {
             return response()->json(['message' => 'غير مصرح لك بتعديل هذا الدرس'], 403);
         }
@@ -117,12 +123,12 @@ class LessonController extends Controller
             return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
         }
 
-        if ($course->teacher_id !== $user->id) {
+        // Teacher أو Admin فقط
+        if ($course->teacher_id !== $user->id && !$user->isAdmin()) {
             return response()->json(['message' => 'غير مصرح لك بحذف هذا الدرس'], 403);
         }
 
         $lesson->delete();
-
         return response()->json(['message' => 'تم حذف الدرس بنجاح']);
     }
 
@@ -135,6 +141,7 @@ class LessonController extends Controller
             return response()->json(['message' => 'الدرس لا ينتمي لهذا الكورس'], 403);
         }
 
+        // Teacher فقط
         if ($course->teacher_id !== $user->id) {
             return response()->json(['message' => 'غير مصرح لك بتوليد أسئلة لهذا الدرس'], 403);
         }
@@ -153,6 +160,7 @@ class LessonController extends Controller
     {
         $user = auth()->user();
 
+        // Teacher فقط
         if ($course->teacher_id !== $user->id) {
             return response()->json(['message' => 'غير مصرح لك بتوليد أسئلة لهذا الكورس'], 403);
         }
@@ -181,6 +189,11 @@ class LessonController extends Controller
     public function completeLesson(Lesson $lesson)
     {
         $user = auth()->user();
+
+        // الطالب يجب أن يكون مشترك في الكورس
+        if (!$user->enrolledCourses->contains($lesson->course_id)) {
+            return response()->json(['message' => 'يجب الاشتراك في الكورس لتعليم الدرس كمكتمل'], 403);
+        }
 
         $user->completedLessons()->syncWithoutDetaching([
             $lesson->id => ['completed_at' => now()]

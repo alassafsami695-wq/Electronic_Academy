@@ -9,83 +9,88 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Course extends Model
 {
-    //---------------- الحقول القابلة للتعبئة -----------------
     protected $fillable = [
-        'title',             
-        'description',       
-        'photo',             
-        'price',             
-        'course_duration',   
+        'title',
+        'description',
+        'photo',
+        'price',
+        'course_duration',
         'number_of_students',
-        'rating',            
-        'teacher_id',        
-        'path_id',      
-        'sales_count',    
+        'rating',
+        'teacher_id',
+        'path_id',
+        'sales_count',
     ];
 
-    //---------------- التحويلات (Casting) -----------------
     protected $casts = [
-        'price'              => 'float',   
-        'rating'             => 'float',   
-        'number_of_students' => 'integer', 
+        'price'              => 'float',
+        'rating'             => 'float',
+        'number_of_students' => 'integer',
     ];
 
-    //---------------- العلاقة مع المعلم -----------------
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
-    //---------------- العلاقة مع المسار -----------------
     public function path(): BelongsTo
     {
         return $this->belongsTo(Path::class);
     }
 
-    //---------------- العلاقة مع الدروس -----------------
     public function lessons(): HasMany
     {
         return $this->hasMany(Lesson::class)->orderBy('order');
     }
 
-    //---------------- نسبة تقدم المستخدم في الكورس -----------------
+    // ---- Query scopes ----
+    public function scopeVisibleFor($query, ?User $user = null)
+    {
+        // فلترة حسب دور المستخدم: المدرّس يرى فقط كورساته، غير ذلك يرى الجميع
+        if ($user && $user->isTeacher()) {
+            return $query->where('teacher_id', $user->id);
+        }
+        return $query;
+    }
+
+    // ---- Accessors ----
     public function getProgressPercentageAttribute(): float
     {
         $user = Auth::user();
 
-        // إذا لم يكن هناك مستخدم أو لا توجد دروس في الكورس
-        if (!$user || $this->lessons->isEmpty()) {
+        // إذا لا يوجد مستخدم أو لا توجد دروس محمّلة/موجودة، أعد 0
+        if (!$user) {
             return 0.0;
         }
 
-        $totalLessons = $this->lessons->count(); 
+        // قلّل الاستعلامات: إذا لم تُحمّل الدروس مسبقًا، لا تجبر على التحميل الكامل
+        // سنحسب بالاعتماد على عدّاد بسيط
+        $lessonIds = $this->relationLoaded('lessons')
+            ? $this->lessons->pluck('id')
+            : $this->lessons()->pluck('id');
 
-        // حساب عدد الدروس المكتملة من جدول lesson_completions
-        $completedLessonsCount = $user->completedLessons()
-            ->whereIn('lesson_id', $this->lessons->pluck('id'))
-            ->count(); 
-
+        $totalLessons = $lessonIds->count();
         if ($totalLessons === 0) {
             return 0.0;
         }
 
-        // نسبة التقدم بدقة (0 - 100)
+        $completedLessonsCount = $user->completedLessons()
+            ->whereIn('lesson_id', $lessonIds)
+            ->count();
+
         return round(($completedLessonsCount / $totalLessons) * 100, 2);
     }
 
-    //---------------- اسم المعلم المرتبط بالكورس -----------------
     public function getTeacherNameAttribute(): ?string
     {
-        return $this->teacher->name ?? null;
+        return optional($this->teacher)->name;
     }
 
-    //---------------- عنوان المسار المرتبط بالكورس -----------------
     public function getPathTitleAttribute(): ?string
     {
-        return $this->path->title ?? null;
+        return optional($this->path)->title;
     }
 
-    //---------------- رابط الصورة المخزنة للكورس -----------------
     public function getPhotoUrlAttribute(): ?string
     {
         return $this->photo ? asset('storage/' . $this->photo) : null;

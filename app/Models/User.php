@@ -15,100 +15,90 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    //---------------------- الحقول القابلة للملء ---------------------
     protected $fillable = [
-        'name',                  
-        'email',                   
-        'password',                
-        'role_id',                 
-        'email_verification_code',  
-        'is_verified',              
-        'is_super_admin',           
+        'name',
+        'email',
+        'password',
+        'role_id',
+        'email_verification_code',
+        'is_verified',
+        'is_super_admin',
     ];
 
-    //-------------------------- الحقول المخفية --------------------
     protected $hidden = [
-        'password',                 
-        'remember_token',           
-        'email_verification_code',  
+        'password',
+        'remember_token',
+        'email_verification_code',
     ];
 
-    //----------------------------- التحويلات (casts) --------------------
     protected $casts = [
-        'email_verified_at' => 'datetime', 
-        'is_super_admin'    => 'boolean',  
+        'email_verified_at' => 'datetime',
+        'is_super_admin'    => 'boolean',
     ];
 
-    //--------------------- العلاقة مع الدور -------------------
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
 
-    //--------------------- ملف التعريف العادي -------------------
     public function profile(): HasOne
     {
         return $this->hasOne(Profile::class);
     }
 
-    //--------------------- ملف المدرّس -------------------
     public function teacherProfile(): HasOne
     {
         return $this->hasOne(TeacherProfile::class);
     }
 
-    //--------------------------- علاقة المحفظة ----------------------
     public function wallet(): HasOne
     {
         return $this->hasOne(Wallet::class);
     }
 
-    //------------------------------- الكورسات التي يدرسها المستخدم (كمعلّم) ------------------------
     public function courses()
     {
         return $this->hasMany(Course::class, 'teacher_id');
     }
 
-    //----------------------------- الكورسات التي يشترك بها المستخدم (كطالب) ----------------------
-   public function enrolledCourses(): BelongsToMany
+    public function enrolledCourses(): BelongsToMany
     {
         return $this->belongsToMany(Course::class, 'course_user', 'user_id', 'course_id')
                     ->withTimestamps();
     }
 
-
-    //----------------------------- التعليقات التي كتبها المستخدم --------------------------
     public function comments()
     {
         return $this->hasMany(Comment::class);
     }
 
-    //----------------------------- الدروس المكتملة ---------------------
     public function completedLessons(): BelongsToMany
     {
-        // ✅ جدول تتبع الدروس المكتملة lesson_completions
         return $this->belongsToMany(Lesson::class, 'lesson_completions')
-                    ->withPivot('completed_at') // وقت إكمال الدرس
-                    ->withTimestamps();         // وقت الإنشاء والتحديث
+                    ->withPivot('completed_at')
+                    ->withTimestamps();
     }
 
-    //-------------------------- تحقق إذا كان المستخدم Admin ------------------------
+    // ---- Roles helpers ----
     public function isAdmin(): bool
     {
-        return $this->is_super_admin || ($this->role && $this->role->name === 'admin');
+        // يدعم super admin أو دور admin بالاسم
+        return (bool) $this->is_super_admin
+            || (optional($this->role)->name && strtolower($this->role->name) === 'admin');
     }
 
-    //------------------------ تحقق إذا كان المستخدم Teacher --------------------
     public function isTeacher(): bool
     {
-        return $this->role && $this->role->name === 'teacher';
+        return optional($this->role)->name && strtolower($this->role->name) === 'teacher';
     }
 
-    public function hasRole($role)
+    public function isStudent(): bool
     {
-        return $this->role && $this->role->name === $role;
+        return optional($this->role)->name && strtolower($this->role->name) === 'user';
     }
 
-
+    public function hasRole(string $role): bool
+    {
+        return optional($this->role)->name && strtolower($this->role->name) === strtolower($role);
+    }
 }
-    

@@ -15,29 +15,62 @@ class PathController extends Controller
         return Path::all();
     }
 
-    // عرض تفاصيل مسار مع الكورسات والتحقق من الاشتراك
+    // عرض تفاصيل مسار مع الكورسات
     public function show(Path $path)
     {
-        $path->load(['courses.teacher', 'courses.lessons']);
+        $user = auth('sanctum')->user();
+        if ($user) {
+            $user->load('role');
+        }
 
-        $user = auth()->user();
+        $query = $path->courses()->with(['teacher', 'lessons']);
 
         if ($user) {
-            $enrolledCourseIds = $user->enrolledCourses()->pluck('courses.id')->toArray();
-
-            $path->courses->each(function ($course) use ($enrolledCourseIds) {
-                $course->is_enrolled = in_array($course->id, $enrolledCourseIds);
-            });
+            if ($user->isAdmin()) {
+                $courses = $query->get();
+            } elseif ($user->isTeacher()) {
+                $courses = $query->where('teacher_id', $user->id)->get();
+            } else {
+                $courses = $query->get();
+            }
         } else {
-            $path->courses->each(function ($course) {
-                $course->is_enrolled = false;
-            });
+            $courses = $query->get();
         }
+
+        // الآن courses معرف
+        $path->setRelation('courses', $courses);
 
         return new PathResource($path);
     }
 
-    // عرض المسار للعامة
+     
+        // $user = auth()->user();
+
+        // if ($user) {
+        //     $user->load('role'); // تحميل الدور للتأكد من isTeacher/isAdmin
+        // }
+
+        // $query = $path->courses()->with(['teacher', 'lessons']);
+
+        // if ($user) {
+        //     if ($user->isAdmin()) {
+        //         $courses = $query->get();
+        //     } elseif ($user->isTeacher()) {
+        //         $courses = $query->where('teacher_id', $user->id)->get();
+        //     } else {
+        //         $courses = $query->get();
+        //     }
+        // } else {
+        //     $courses = $query->get();
+        // }
+
+        // // استبدال العلاقة بالكورسات المفلترة
+        // $path->setRelation('courses', $courses);
+
+        // return new PathResource($path);
+    
+
+    // عرض المسار للعامة (زائر)
     public function publicShow(Path $path)
     {
         $path->load(['courses.teacher', 'courses.lessons']);
@@ -100,7 +133,25 @@ class PathController extends Controller
     // جلب الكورسات ضمن المسار
     public function course(Path $path)
     {
-        $courses = $path->courses()->select('id', 'title', 'description', 'price', 'photo')->get();
+        $user = auth()->user();
+
+        if ($user) {
+            $user->load('role');
+        }
+
+        $query = $path->courses()->select('id', 'title', 'description', 'price', 'photo');
+
+        if ($user) {
+            if ($user->isAdmin()) {
+                $courses = $query->get();
+            } elseif ($user->isTeacher()) {
+                $courses = $query->where('teacher_id', $user->id)->get();
+            } else {
+                $courses = $query->get();
+            }
+        } else {
+            $courses = $query->get();
+        }
 
         return response()->json([
             'path_id'    => $path->id,

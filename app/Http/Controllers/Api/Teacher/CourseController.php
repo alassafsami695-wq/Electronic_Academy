@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
+    // المدرّس يشاهد كورساته فقط
     public function index()
     {
         $user = auth()->user();
@@ -23,6 +24,7 @@ class CourseController extends Controller
         return CourseResource::collection($courses);
     }
 
+    // إنشاء كورس جديد
     public function store(StoreCourseRequest $request)
     {
         $user = auth()->user();
@@ -38,33 +40,33 @@ class CourseController extends Controller
         return new CourseResource($course);
     }
 
+    // عرض كورس واحد
     public function show(Course $course)
     {
         $user = auth()->user();
-        if ($course->teacher_id !== $user->id) {
-            return response()->json(['message' => 'غير مصرح لك'], 403);
+
+        // Teacher صاحب الكورس أو Admin فقط
+        if ($course->teacher_id === $user->id || $user->isAdmin()) {
+            $course->load(['teacher', 'path', 'lessons']);
+            return new CourseResource($course);
         }
 
-        $course->load(['teacher', 'path', 'lessons']);
-
-        return new CourseResource($course);
+        return response()->json(['message' => 'غير مصرح لك'], 403);
     }
 
+    // عرض الكورس للعامة (بدون دروس أو اشتراك)
     public function publicShow(Course $course)
     {
-        $course->load(['teacher', 'path', 'lessons']);
-
-        return (new PublicCourseResource($course))
-            ->additional([
-                'is_enrolled' => auth()->check()
-                    ? auth()->user()->enrolledCourses()->where('courses.id', $course->id)->exists()
-                    : false,
-            ]);
+        $course->load(['teacher', 'path']);
+        return new PublicCourseResource($course);
     }
 
+    // تعديل كورس
     public function update(UpdateCourseRequest $request, Course $course)
     {
         $user = auth()->user();
+
+        // Teacher فقط
         if ($course->teacher_id !== $user->id) {
             return response()->json(['message' => 'غير مصرح لك بتعديل هذا الكورس'], 403);
         }
@@ -83,10 +85,13 @@ class CourseController extends Controller
         return new CourseResource($course);
     }
 
+        // حذف كورس
     public function destroy(Course $course)
     {
         $user = auth()->user();
-        if ($course->teacher_id !== $user->id) {
+
+        // Teacher أو Admin فقط
+        if ($course->teacher_id !== $user->id && !$user->isAdmin()) {
             return response()->json(['message' => 'غير مصرح لك بحذف هذا الكورس'], 403);
         }
 
@@ -95,10 +100,11 @@ class CourseController extends Controller
         }
 
         $course->delete();
-
         return response()->json(['message' => 'تم حذف الكورس بنجاح']);
     }
 
+
+    // أفضل الكورسات مبيعًا
     public function bestSelling()
     {
         return response()->json(
@@ -106,6 +112,7 @@ class CourseController extends Controller
         );
     }
 
+    // قائمة مشترياتي (الطالب فقط)
     public function myCourses()
     {
         $user = auth()->user();
@@ -123,8 +130,6 @@ class CourseController extends Controller
             $course->progress = $totalLessons > 0
                 ? round(($completedLessons / $totalLessons) * 100, 2)
                 : 0;
-
-            $course->is_enrolled = true;
         }
 
         return response()->json([
