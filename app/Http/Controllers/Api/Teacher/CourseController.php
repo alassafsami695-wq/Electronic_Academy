@@ -45,14 +45,30 @@ class CourseController extends Controller
     {
         $user = auth()->user();
 
-        // Teacher صاحب الكورس أو Admin فقط
-        if ($course->teacher_id === $user->id || $user->isAdmin()) {
+        if ($user->isAdmin() || $course->teacher_id === $user->id) {
             $course->load(['teacher', 'path', 'lessons']);
             return new CourseResource($course);
         }
 
+        if ($user->isStudent()) {
+            $isSubscribed = $course->students()
+                ->where('student_id', $user->id)
+                ->exists();
+
+            if ($isSubscribed) {
+                // الطالب مشترك → يرى الكورس والدروس
+                $course->load(['teacher', 'path', 'lessons']);
+                return new CourseResource($course);
+            }
+
+            // الطالب غير مشترك → لا يرى الكورس هنا
+            return response()->json(['message' => 'يمكنك رؤية هذا الكورس فقط في قائمة مشترياتي'], 403);
+        }
+
         return response()->json(['message' => 'غير مصرح لك'], 403);
     }
+   
+
 
     // عرض الكورس للعامة (بدون دروس أو اشتراك)
     public function publicShow(Course $course)

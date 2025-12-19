@@ -21,15 +21,21 @@ class CourseResource extends JsonResource
             'course_duration'    => $this->course_duration,
             'number_of_students' => $this->number_of_students,
             'rating'             => $this->rating,
-            //'is_enrolled'        => $isEnrolled,
-            // ❌ lessons محذوفة من هنا
-            'progress' => $course->progress_percentage,
+            'is_enrolled'        => $isEnrolled,
+
+            // ✅ الآن سيظهر progress إذا تم حسابه في الـ Controller
+            'progress'           => property_exists($this, 'progress') ? $this->progress : null,
 
             'teacher'            => new UserResource($this->whenLoaded('teacher')),
             'path'               => $this->path ? [
                 'id'    => $this->path->id,
                 'title' => $this->path->title,
             ] : null,
+
+            'lessons'            => $this->relationLoaded('lessons')
+                ? LessonResource::collection($this->lessons)
+                : null,
+
             'created_at'         => $this->created_at,
             'updated_at'         => $this->updated_at,
         ];
