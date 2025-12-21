@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Wallet;
 
 class UserSeeder extends Seeder
 {
@@ -15,6 +16,18 @@ class UserSeeder extends Seeder
         foreach ($roles as $roleName) {
             Role::firstOrCreate(['name' => $roleName]);
         }
+
+        // دالة مساعدة لإنشاء المحفظة لتقليل تكرار الكود
+        $createWallet = function ($user) {
+            $user->wallet()->firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'balance' => 100.00, // رصيد افتراضي
+                    'account_number' => 'SHAM-' . rand(100000, 999999),
+                    'wallet_password' => bcrypt('1234'), // كلمة مرور افتراضية للمحفظة
+                ]
+            );
+        };
 
         // ---------------- Super Admin ----------------
         $superAdmin = User::firstOrCreate(
@@ -28,6 +41,7 @@ class UserSeeder extends Seeder
             ]
         );
         $superAdmin->profile()->firstOrCreate([]);
+        $createWallet($superAdmin);
 
         // ---------------- Admin ----------------
         $admin = User::firstOrCreate(
@@ -41,6 +55,7 @@ class UserSeeder extends Seeder
             ]
         );
         $admin->profile()->firstOrCreate([]);
+        $createWallet($admin);
 
         // ---------------- Teacher ----------------
         $teacher = User::firstOrCreate(
@@ -53,6 +68,7 @@ class UserSeeder extends Seeder
             ]
         );
         $teacher->profile()->firstOrCreate([]);
+        $createWallet($teacher);
 
         // ---------------- Normal User ----------------
         $user = User::firstOrCreate(
@@ -65,5 +81,6 @@ class UserSeeder extends Seeder
             ]
         );
         $user->profile()->firstOrCreate([]);
+        $createWallet($user);
     }
 }

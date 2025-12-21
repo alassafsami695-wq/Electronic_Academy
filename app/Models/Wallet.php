@@ -3,18 +3,32 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Wallet extends Model
-{
-    //---------------- الحقول القابلة للتعبئة -----------------
+class Wallet extends Model {
+    use HasFactory;
+
     protected $fillable = [
-        'user_id', // رقم المستخدم المرتبط بالمحفظة
-        'balance', // رصيد المحفظة الحالي
+        'user_id', 
+        'balance',
+        'account_number',   
+        'wallet_password',
     ];
 
-    //---------------- العلاقة مع المستخدم -----------------
-    public function user()
-    {
-        return $this->belongsTo(User::class); // كل محفظة مرتبطة بمستخدم واحد
+    protected $hidden = [
+        'wallet_password', // إخفاء كلمة المرور عند إرسال البيانات للـ API
+    ];
+
+    // لضمان استرجاع الرصيد كقيمة رقمية دقيقة
+    protected $casts = [
+        'balance' => 'decimal:2',
+    ];
+
+    public function user() {
+        return $this->belongsTo(User::class);
+    }
+
+    public function transactions() {
+        return $this->hasMany(Transaction::class);
     }
 }

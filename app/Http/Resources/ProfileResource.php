@@ -43,6 +43,8 @@ class ProfileResource extends JsonResource
                 'github_url'    => $this->user->teacherProfile->github_url,
 
             ] : null,
+
+            'wallet' => $this->user->wallet, 
         ];
     }
 }
