@@ -12,22 +12,11 @@ class PathResource extends JsonResource
             'id'          => $this->id,
             'title'       => $this->title,
             'description' => $this->description,
+            // إضافة صورة المسار هنا
+            'photo'       => $this->photo ? asset('storage/' . $this->photo) : null,
 
-            'courses'     => $this->courses->map(function ($course) {
-                return [
-                    'id'          => $course->id,
-                    'title'       => $course->title,
-                    'description' => $course->description,
-                    'price'       => $course->price,
-                    'photo'       => $course->photo ? asset('storage/' . $course->photo) : null,
-                    'progress'    => $course->progress_percentage ?? 0,
-                    'teacher'     => $course->teacher ? [
-                        'id'    => $course->teacher->id,
-                        'name'  => $course->teacher->name,
-                        'email' => $course->teacher->email,
-                    ] : null,
-                ];
-            }),
+            // استخدام CourseResource لضمان ظهور كافة حقول الكورس (is_enrolled, rating, الخ)
+            'courses'     => CourseResource::collection($this->whenLoaded('courses', $this->courses)),
         ];
     }
 }

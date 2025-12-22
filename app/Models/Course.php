@@ -6,6 +6,7 @@ use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Course extends Model
 {
@@ -43,10 +44,15 @@ class Course extends Model
         return $this->hasMany(Lesson::class)->orderBy('order');
     }
 
+    // العلاقة الجديدة للتحقق من المشتركين
+    public function enrolledUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'course_user');
+    }
+
     // ---- Query scopes ----
     public function scopeVisibleFor($query, ?User $user = null)
     {
-        // فلترة حسب دور المستخدم: المدرّس يرى فقط كورساته، غير ذلك يرى الجميع
         if ($user && $user->isTeacher()) {
             return $query->where('teacher_id', $user->id);
         }
@@ -56,15 +62,12 @@ class Course extends Model
     // ---- Accessors ----
     public function getProgressPercentageAttribute(): float
     {
-        $user = Auth::user();
+        $user = Auth::guard('sanctum')->user();
 
-        // إذا لا يوجد مستخدم أو لا توجد دروس محمّلة/موجودة، أعد 0
         if (!$user) {
             return 0.0;
         }
 
-        // قلّل الاستعلامات: إذا لم تُحمّل الدروس مسبقًا، لا تجبر على التحميل الكامل
-        // سنحسب بالاعتماد على عدّاد بسيط
         $lessonIds = $this->relationLoaded('lessons')
             ? $this->lessons->pluck('id')
             : $this->lessons()->pluck('id');

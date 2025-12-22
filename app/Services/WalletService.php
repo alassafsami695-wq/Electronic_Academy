@@ -9,9 +9,7 @@ use Exception;
 
 class WalletService
 {
-    
-    //  الخطوة 1: تسجيل طلب شحن محفظة (قبل الذهاب لشام كاش)
-     
+    // الخطوة 1: تسجيل طلب شحن محفظة
     public function initiateDeposit(User $user, float $amount, string $description = null)
     {
         return Transaction::create([
@@ -23,12 +21,9 @@ class WalletService
         ]);
     }
 
-    
-    //  الخطوة 2: تأكيد العملية وتحديث الرصيد (بعد نجاح الدفع)
-     
+    // الخطوة 2: تأكيد العملية وتحديث الرصيد
     public function completeTransaction(string $referenceId, $transactionId)
     {
-        // جلب العملية مع المحفظة المرتبطة بها لضمان عدم وجود Null
         $transaction = Transaction::with('wallet')->findOrFail($transactionId);
 
         if ($transaction->status !== 'pending') {
@@ -38,7 +33,6 @@ class WalletService
         DB::transaction(function () use ($transaction, $referenceId) {
             $wallet = $transaction->wallet;
 
-            // التحقق الإضافي لمنع الخطأ الظاهر في السجل
             if (!$wallet) {
                 throw new Exception("المحفظة المرتبطة بهذه العملية غير موجودة.");
             }
@@ -55,22 +49,24 @@ class WalletService
         return true;
     }
 
-    
-     // الخصم المباشر (لشراء كورس مثلاً من الرصيد الحالي)
-     
-    public function debitForPurchase(User $user, float $amount, string $description)
+    // تم تعديل الاسم هنا ليصبح debit ليتوافق مع الـ Controller
+    public function debit(User $user, float $amount, string $description)
     {
         $wallet = $user->wallet;
+
+        if (!$wallet) {
+            throw new Exception("لا توجد محفظة لهذا المستخدم.");
+        }
 
         if ($wallet->balance < $amount) {
             throw new Exception("رصيدك غير كافٍ لإتمام عملية الشراء.");
         }
 
-        DB::transaction(function () use ($wallet, $amount, $description) {
+        return DB::transaction(function () use ($wallet, $amount, $description) {
             $wallet->balance -= $amount;
             $wallet->save();
 
-            Transaction::create([
+            return Transaction::create([
                 'wallet_id' => $wallet->id,
                 'amount' => $amount,
                 'type' => 'debit',

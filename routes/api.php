@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\TeacherProfileController;
+use App\Http\Controllers\Api\FeatureController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PathController;
@@ -15,12 +16,19 @@ use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\LessonQuestionController;
 use App\Http\Controllers\Api\Teacher\PurchaseController;
 use App\Http\Controllers\PaymentController; 
+use App\Http\Controllers\ContactSettingController; 
 
 /*
 |--------------------------------------------------------------------------
 | المسارات العامة (لا تتطلب تسجيل دخول)
 |--------------------------------------------------------------------------
 */
+
+Route::get('features', [FeatureController::class, 'index']); 
+Route::get('features/{id}', [FeatureController::class, 'show']);
+
+// معلومات التواصل للشاشة الرئيسية
+Route::get('contact-settings', [ContactSettingController::class, 'index']);
 
 // ------------------------- OPENAI QUESTIONS -------------------------
 Route::post('/generate-questions', [QuestionController::class, 'generate']);
@@ -41,7 +49,7 @@ Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 
 // ------------------------- PUBLIC COURSE & JOB ROUTES -------------------------
 Route::get('/courses/{course}', [CourseController::class, 'publicShow']);
-Route::post('/payments/callback', [PaymentController::class, 'handleCallback']); // الرابط الحقيقي لشام كاش
+Route::post('/payments/callback', [PaymentController::class, 'handleCallback']); 
 
 Route::prefix('job-listings')->group(function () {
     Route::get('/', [JobListingController::class, 'index']);
@@ -59,7 +67,6 @@ Route::prefix('job-listings')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    // ------------------------- LOGOUT -------------------------
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // ------------------------- ADMIN ROUTES -------------------------
@@ -88,6 +95,13 @@ Route::middleware('auth:sanctum')->group(function () {
         // إدارة الاعلانات
         Route::post('ads', [AdvertisementController::class, 'store']);
         Route::delete('ads/{id}', [AdvertisementController::class, 'destroy']);
+
+        Route::post('features', [FeatureController::class, 'store']); 
+        Route::post('features/{feature}/update', [FeatureController::class, 'update']); 
+        Route::delete('features/{feature}', [FeatureController::class, 'destroy']); 
+
+        // تحديث معلومات التواصل (للأدمن)
+        Route::post('contact-settings', [ContactSettingController::class, 'update']);
     });
 
     // ------------------------- TEACHER ROUTES -------------------------
@@ -121,28 +135,23 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('courses/{course}', [UserController::class, 'destroyCourse']);
     });
 
-    // ------------------------- AUTHENTICATED USER ROUTES (STUDENTS/ALL) -------------------------
+    // ------------------------- AUTHENTICATED USER ROUTES -------------------------
     Route::group([], function () {
-        // Comments
         Route::get('comments', [CommentController::class, 'index']);
         Route::get('comments/{id}', [CommentController::class, 'show']);
         Route::post('comments', [CommentController::class, 'store']);
         Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
 
-        // الاعلانات
         Route::get('ads', [AdvertisementController::class, 'index']);
 
-        // المدفوعات والمحفظة
-        Route::post('deposit', [PaymentController::class, 'deposit']); // طلب شحن
-        Route::get('simulate-payment/{order_id}', [PaymentController::class, 'simulateSuccess']); // للمحاكاة
+        Route::post('deposit', [PaymentController::class, 'deposit']); 
+        Route::get('simulate-payment/{order_id}', [PaymentController::class, 'simulateSuccess']); 
         Route::post('wallet/update', [PaymentController::class, 'updateWalletInfo']);
         
-        // الشراء والدروس
         Route::post('courses/{course}/purchase', [PurchaseController::class, 'purchaseCourse']);
         Route::get('my-courses', [CourseController::class, 'myCourses']);
         Route::post('lessons/{lesson}/complete', [LessonController::class, 'completeLesson']);
 
-        // Profile
         Route::get('profile', [ProfileController::class, 'show']);
         Route::post('profile/update', [ProfileController::class, 'update']);
         Route::get('lessons/{lesson}/questions', [LessonQuestionController::class, 'getQuestions']);

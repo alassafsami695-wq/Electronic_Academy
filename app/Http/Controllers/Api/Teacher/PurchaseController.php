@@ -7,6 +7,7 @@ use App\Models\Course;
 use Illuminate\Http\Request;
 use App\Services\WalletService;
 use App\Http\Resources\CourseResource;
+use Exception;
 
 class PurchaseController extends Controller
 {
@@ -18,7 +19,6 @@ class PurchaseController extends Controller
         $this->walletService = $walletService;
     }
 
-    // شراء كورس من قبل المستخدم الحالي
     public function purchaseCourse(Request $request, Course $course)
     {
         $user = auth()->user();
@@ -29,30 +29,26 @@ class PurchaseController extends Controller
         }
 
         try {
-            // خصم من المحفظة
+            // تنفيذ عملية الخصم من المحفظة
             $this->walletService->debit(
                 $user,
-                $course->price,
-                "شراء الكورس: " . $course->title,
-                $course->id
+                (float) $course->price,
+                "شراء الكورس: " . $course->title
             );
 
-            // ربط الطالب بالكورس (مع حماية من التكرار)
-            if (!$user->enrolledCourses()->where('course_id', $course->id)->exists()) {
-                $user->enrolledCourses()->attach($course->id);
-            }
+            // ربط الطالب بالكورس (مع حماية إضافية)
+            $user->enrolledCourses()->syncWithoutDetaching([$course->id]);
 
             // تحميل العلاقات المطلوبة
             $course->load(['teacher', 'path', 'lessons']);
 
-            // ✅ رجع الكورس مع تفاصيله الكاملة
             return response()->json([
                 'message' => 'تم الاشتراك بنجاح',
                 'course'  => new CourseResource($course)
             ], 200);
 
-        } catch (\Exception $e) {
-            // ✅ رسالة واضحة عند الفشل
+        } catch (Exception $e) {
+            // إرجاع رسالة الخطأ سواء كانت "رصيد غير كافٍ" أو أي خطأ آخر
             return response()->json([
                 'message' => 'فشل الاشتراك: ' . $e->getMessage()
             ], 400);

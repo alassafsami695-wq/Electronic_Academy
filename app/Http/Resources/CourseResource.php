@@ -9,8 +9,10 @@ class CourseResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $user = auth()->user();
-        $isEnrolled = $user ? $user->enrolledCourses->contains($this->id) : false;
+        $user = auth('sanctum')->user();
+        
+        // 1. التحقق من الاشتراك (هذا هو المفتاح)
+        $isEnrolled = $user ? $this->enrolledUsers()->where('user_id', $user->id)->exists() : false;
 
         return [
             'id'                 => $this->id,
@@ -22,17 +24,17 @@ class CourseResource extends JsonResource
             'number_of_students' => $this->number_of_students,
             'rating'             => $this->rating,
             'is_enrolled'        => $isEnrolled,
-
-            // ✅ الآن سيظهر progress إذا تم حسابه في الـ Controller
-            'progress'           => property_exists($this, 'progress') ? $this->progress : null,
+            'progress'           => $isEnrolled ? $this->progress_percentage : 0,
 
             'teacher'            => new UserResource($this->whenLoaded('teacher')),
+            
             'path'               => $this->path ? [
                 'id'    => $this->path->id,
                 'title' => $this->path->title,
             ] : null,
 
-            'lessons'            => $this->relationLoaded('lessons')
+            // ✅ التعديل هنا: يجب أن يكون مشتركاً (isEnrolled) ليرى الدروس
+            'lessons'            => ($isEnrolled && $this->relationLoaded('lessons'))
                 ? LessonResource::collection($this->lessons)
                 : null,
 
