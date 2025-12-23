@@ -31,11 +31,11 @@ Route::get('features/{id}', [FeatureController::class, 'show']);
 Route::get('contact-settings', [ContactSettingController::class, 'index']);
 Route::get('/teachers/{id}', [TeacherProfileController::class, 'publicShow']);
 
-// 🔍 مسارات الكورسات العامة (البحث متاح هنا عبر الـ index)
+// 🔍 مسارات الكورسات العامة
 Route::get('/paths', [PathController::class, 'index']);
 Route::get('/paths/{path}', [PathController::class, 'show']);
 Route::get('/paths/{path}/courses', [PathController::class, 'course']);
-Route::get('/courses', [CourseController::class, 'index']); // يدعم ?search=...
+Route::get('/courses', [CourseController::class, 'index']); 
 Route::get('/courses/best-selling', [CourseController::class, 'bestSelling']);
 Route::get('/courses/{course}', [CourseController::class, 'publicShow']);
 
@@ -47,10 +47,10 @@ Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 
 Route::post('/payments/callback', [PaymentController::class, 'handleCallback']); 
 
-// ------------------------- JOBS -------------------------
+// ------------------------- JOBS (Public) -------------------------
 Route::prefix('job-listings')->group(function () {
-    Route::get('/', [JobListingController::class, 'index']);
-    Route::get('/{job}', [JobListingController::class, 'show']);
+    Route::get('/', [JobListingController::class, 'index'])->name('job-listings.index');
+    Route::get('/{job}', [JobListingController::class, 'show'])->name('job-listings.show');
 });
 
 /*
@@ -63,7 +63,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // لوحة التحكم (متاحة للجميع وتعيد بيانات حسب الدور)
     Route::get('/dashboard/stats', [DashboardController::class, 'index']);
 
     // ------------------------- ADMIN ROUTES -------------------------
@@ -71,7 +70,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('users', [UserController::class, 'index']);
         Route::get('users/{user}', [UserController::class, 'show']);
 
-        // سحب الأرباح (خاص بالسوبر أدمن داخل الكنترولر
         Route::post('withdraw', [DashboardController::class, 'withdrawRevenue']);
         
         Route::post('users/{user}/toggle-status', [UserController::class, 'toggleStatus']);
@@ -92,10 +90,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('features/{feature}', [FeatureController::class, 'destroy']); 
         Route::post('contact-settings', [ContactSettingController::class, 'update']);
 
-        // إدارة الوظائف (إضافة/تعديل/حذف)
-        Route::post('job-listings', [JobListingController::class, 'store']);
-        Route::post('job-listings/{id}', [JobListingController::class, 'update']);
-        Route::delete('job-listings/{id}', [JobListingController::class, 'destroy']);
+        // إدارة الوظائف (بإضافة الأسماء لضمان عمل الـ Resource)
+        Route::post('job-listings', [JobListingController::class, 'store'])->name('admin.job-listings.store');
+        Route::post('job-listings/{id}', [JobListingController::class, 'update'])->name('admin.job-listings.update');
+        Route::delete('job-listings/{id}', [JobListingController::class, 'destroy'])->name('admin.job-listings.destroy');
     });
 
     // ------------------------- TEACHER ROUTES -------------------------
@@ -118,7 +116,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('lessons/{lesson}/questions/store', [LessonQuestionController::class, 'store']);
     });
 
-    // ------------------------- STUDENT & AUTH USER ROUTES -------------------------
+    // ------------------------- SHARED / STUDENT ROUTES -------------------------
     Route::get('comments', [CommentController::class, 'index']);
     Route::post('comments', [CommentController::class, 'store']);
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
