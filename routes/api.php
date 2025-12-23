@@ -24,6 +24,9 @@ use App\Http\Controllers\ContactSettingController;
 |--------------------------------------------------------------------------
 */
 
+// الإعلانات متاحة للجميع الآن
+Route::get('ads', [AdvertisementController::class, 'index']); 
+
 Route::get('features', [FeatureController::class, 'index']); 
 Route::get('features/{id}', [FeatureController::class, 'show']);
 Route::get('contact-settings', [ContactSettingController::class, 'index']);
@@ -36,7 +39,7 @@ Route::get('/paths/{path}/courses', [PathController::class, 'course']);
 Route::get('/courses/best-selling', [CourseController::class, 'bestSelling']);
 Route::get('/courses/{course}', [CourseController::class, 'publicShow']);
 
-// ------------------------- AUTH (تعديل التسجيل) -------------------------
+// ------------------------- AUTH -------------------------
 Route::post('/register/student', [AuthController::class, 'registerStudent']); 
 Route::post('/register/teacher', [AuthController::class, 'registerTeacher']); 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -67,22 +70,24 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('users', [UserController::class, 'index']);
         Route::get('users/{user}', [UserController::class, 'show']);
         
-        // ميزة تعليق/تفعيل الحساب (بديلة للحذف اليدوي للأدمن)
+        // ميزة تعليق/تفعيل الحساب (إنهاء التعليق)
         Route::post('users/{user}/toggle-status', [UserController::class, 'toggleStatus']);
         
-        // إدارة الأدمن (فقط سوبر أدمن داخل الكنترولر)
+        // إدارة الأدمن
         Route::post('admins', [UserController::class, 'storeAdmin']);
-        Route::delete('users/{user}', [UserController::class, 'destroyUser']); // حذف نهائي (للسوبر أدمن فقط)
+        Route::delete('users/{user}', [UserController::class, 'destroyUser']); 
 
         // إدارة المسارات (Paths)
         Route::post('paths', [UserController::class, 'storePath']);
         Route::post('paths/{path}/update', [UserController::class, 'updatePath']);
         Route::delete('paths/{path}', [UserController::class, 'destroyPath']);
 
-        // إدارة المحتوى والإعلانات
-        Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
+        // إدارة المحتوى والإعلانات (تحكم الإدارة)
         Route::post('ads', [AdvertisementController::class, 'store']);
+        Route::post('ads/{id}/toggle-status', [AdvertisementController::class, 'toggleStatus']); // تبديل حالة الإعلان
         Route::delete('ads/{id}', [AdvertisementController::class, 'destroy']);
+        
+        Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
         Route::post('features', [FeatureController::class, 'store']); 
         Route::post('features/{feature}/update', [FeatureController::class, 'update']); 
         Route::delete('features/{feature}', [FeatureController::class, 'destroy']); 
@@ -94,19 +99,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('profile', [TeacherProfileController::class, 'show']);
         Route::post('profile/update', [TeacherProfileController::class, 'update']);
         
-        // إدارة الكورسات والدروس
         Route::get('courses', [CourseController::class, 'index']);
         Route::get('courses/{course}', [CourseController::class, 'show']);
         Route::post('courses', [CourseController::class, 'store']);
         Route::post('courses/{course}/update', [CourseController::class, 'update']);
-        Route::delete('courses/{course}', [CourseController::class, 'destroy']); // الأستاذ يحذف كورسه فقط
+        Route::delete('courses/{course}', [CourseController::class, 'destroy']);
 
         Route::get('courses/{course}/lessons', [LessonController::class, 'index']);
         Route::post('courses/{course}/lessons', [LessonController::class, 'store']);
         Route::post('courses/{course}/lessons/{lesson}/update', [LessonController::class, 'update']);
         Route::delete('courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy']);
 
-        // الأسئلة والذكاء الاصطناعي
         Route::post('lessons/{lesson}/questions/generate', [LessonQuestionController::class, 'generateAndStore']);
         Route::post('lessons/{lesson}/questions/store', [LessonQuestionController::class, 'store']);
     });
@@ -118,26 +121,22 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ------------------------- STUDENT / AUTH USER ROUTES -------------------------
     Route::group([], function () {
-        // التعليقات
         Route::get('comments', [CommentController::class, 'index']);
         Route::post('comments', [CommentController::class, 'store']);
         Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
 
-        // المحفظة والدفع
         Route::post('deposit', [PaymentController::class, 'deposit']); 
         Route::get('simulate-payment/{order_id}', [PaymentController::class, 'simulateSuccess']); 
         Route::post('wallet/update', [PaymentController::class, 'updateWalletInfo']);
         
-        // الشراء والتقدم
         Route::post('courses/{course}/purchase', [PurchaseController::class, 'purchaseCourse']);
-        Route::get('my-courses', [UserController::class, 'getMyCourses']); // استدعاء من يوزر كنترولر كما عدلناه
+        Route::get('my-courses', [UserController::class, 'getMyCourses']); 
         Route::post('lessons/{lesson}/complete', [LessonController::class, 'completeLesson']);
         Route::post('lessons/{lesson}/questions/submit', [LessonQuestionController::class, 'submitAnswers']);
         Route::get('lessons/{lesson}/questions', [LessonQuestionController::class, 'getQuestions']);
 
-        // الملف الشخصي
         Route::get('profile', [ProfileController::class, 'show']);
         Route::post('profile/update', [ProfileController::class, 'update']);
-        Route::get('ads', [AdvertisementController::class, 'index']);
+        
     });
 });
