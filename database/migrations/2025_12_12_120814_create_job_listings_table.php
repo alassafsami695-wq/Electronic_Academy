@@ -12,15 +12,15 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description');
+            $table->string('company_name')->nullable(); // اسم الشركة
+            $table->string('company_email')->nullable(); // إيميل الشركة
+            $table->string('job_type')->default('full-time'); // نوع العمل
+            $table->integer('working_hours')->nullable(); // ساعات الدوام
             $table->decimal('salary', 10, 2)->nullable();
             $table->timestamps();
         });
     }
 
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('job_listings');

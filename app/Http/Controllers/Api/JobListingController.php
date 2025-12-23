@@ -11,7 +11,7 @@ class JobListingController extends Controller
 {
     public function index()
     {
-        return JobListingResource::collection(JobListing::all())
+        return JobListingResource::collection(JobListing::latest()->get())
             ->additional(['message' => 'تم جلب الوظائف بنجاح']);
     }
 
@@ -25,12 +25,16 @@ class JobListingController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title'       => 'required|string|max:255',
-            'description' => 'required|string',
-            'salary'      => 'nullable|numeric|min:0',
+            'title'         => 'required|string|max:255',
+            'description'   => 'required|string',
+            'company_name'  => 'required|string|max:255',
+            'company_email' => 'required|email',
+            'job_type'      => 'required|string',
+            'working_hours' => 'nullable|integer',
+            'salary'        => 'nullable|numeric|min:0',
         ]);
 
-        $job = JobListing::create($request->only(['title', 'description', 'salary']));
+        $job = JobListing::create($request->all());
 
         return (new JobListingResource($job))
             ->additional(['message' => 'تم إنشاء الوظيفة بنجاح'])
@@ -41,14 +45,13 @@ class JobListingController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'title'       => 'sometimes|required|string|max:255',
-            'description' => 'sometimes|required|string',
-            'salary'      => 'nullable|numeric|min:0',
+            'title'         => 'sometimes|required|string|max:255',
+            'company_email' => 'sometimes|email',
+            'salary'        => 'nullable|numeric|min:0',
         ]);
 
         $job = JobListing::findOrFail($id);
-        $job->update($request->only(['title', 'description', 'salary']));
-        $job->refresh();
+        $job->update($request->all());
 
         return (new JobListingResource($job))
             ->additional(['message' => 'تم تحديث الوظيفة بنجاح']);
@@ -58,7 +61,6 @@ class JobListingController extends Controller
     {
         $job = JobListing::findOrFail($id);
         $job->delete();
-
         return response()->json(['message' => 'تم حذف الوظيفة بنجاح']);
     }
 }

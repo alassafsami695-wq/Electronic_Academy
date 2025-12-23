@@ -9,11 +9,13 @@ class JobListing extends Model
 {
     use HasFactory;
 
-
-    // ✅ الحقول القابلة للتعبئة
     protected $fillable = [
         'title',
         'description',
+        'company_name',
+        'company_email',
+        'job_type',
+        'working_hours',
         'salary',
     ];
 }

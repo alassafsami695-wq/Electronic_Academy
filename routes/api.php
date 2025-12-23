@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AdvertisementController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\TeacherProfileController;
 use App\Http\Controllers\Api\FeatureController;
@@ -24,18 +25,17 @@ use App\Http\Controllers\ContactSettingController;
 |--------------------------------------------------------------------------
 */
 
-// الإعلانات متاحة للجميع الآن
 Route::get('ads', [AdvertisementController::class, 'index']); 
-
 Route::get('features', [FeatureController::class, 'index']); 
 Route::get('features/{id}', [FeatureController::class, 'show']);
 Route::get('contact-settings', [ContactSettingController::class, 'index']);
 Route::get('/teachers/{id}', [TeacherProfileController::class, 'publicShow']);
 
-// ------------------------- PATHS & COURSES -------------------------
+// 🔍 مسارات الكورسات العامة (البحث متاح هنا عبر الـ index)
 Route::get('/paths', [PathController::class, 'index']);
 Route::get('/paths/{path}', [PathController::class, 'show']);
 Route::get('/paths/{path}/courses', [PathController::class, 'course']);
+Route::get('/courses', [CourseController::class, 'index']); // يدعم ?search=...
 Route::get('/courses/best-selling', [CourseController::class, 'bestSelling']);
 Route::get('/courses/{course}', [CourseController::class, 'publicShow']);
 
@@ -45,7 +45,6 @@ Route::post('/register/teacher', [AuthController::class, 'registerTeacher']);
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 
-// ------------------------- PAYMENTS CALLBACK -------------------------
 Route::post('/payments/callback', [PaymentController::class, 'handleCallback']); 
 
 // ------------------------- JOBS -------------------------
@@ -53,7 +52,6 @@ Route::prefix('job-listings')->group(function () {
     Route::get('/', [JobListingController::class, 'index']);
     Route::get('/{job}', [JobListingController::class, 'show']);
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -65,26 +63,27 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    // لوحة التحكم (متاحة للجميع وتعيد بيانات حسب الدور)
+    Route::get('/dashboard/stats', [DashboardController::class, 'index']);
+
     // ------------------------- ADMIN ROUTES -------------------------
     Route::middleware('is.Admin')->prefix('admin')->group(function () {
         Route::get('users', [UserController::class, 'index']);
         Route::get('users/{user}', [UserController::class, 'show']);
+
+        // سحب الأرباح (خاص بالسوبر أدمن داخل الكنترولر
+        Route::post('withdraw', [DashboardController::class, 'withdrawRevenue']);
         
-        // ميزة تعليق/تفعيل الحساب (إنهاء التعليق)
         Route::post('users/{user}/toggle-status', [UserController::class, 'toggleStatus']);
-        
-        // إدارة الأدمن
         Route::post('admins', [UserController::class, 'storeAdmin']);
         Route::delete('users/{user}', [UserController::class, 'destroyUser']); 
 
-        // إدارة المسارات (Paths)
         Route::post('paths', [UserController::class, 'storePath']);
         Route::post('paths/{path}/update', [UserController::class, 'updatePath']);
         Route::delete('paths/{path}', [UserController::class, 'destroyPath']);
 
-        // إدارة المحتوى والإعلانات (تحكم الإدارة)
         Route::post('ads', [AdvertisementController::class, 'store']);
-        Route::post('ads/{id}/toggle-status', [AdvertisementController::class, 'toggleStatus']); // تبديل حالة الإعلان
+        Route::post('ads/{id}/toggle-status', [AdvertisementController::class, 'toggleStatus']); 
         Route::delete('ads/{id}', [AdvertisementController::class, 'destroy']);
         
         Route::delete('comments/{comment}', [UserController::class, 'destroyComment']);
@@ -92,6 +91,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('features/{feature}/update', [FeatureController::class, 'update']); 
         Route::delete('features/{feature}', [FeatureController::class, 'destroy']); 
         Route::post('contact-settings', [ContactSettingController::class, 'update']);
+
+        // إدارة الوظائف (إضافة/تعديل/حذف)
+        Route::post('job-listings', [JobListingController::class, 'store']);
+        Route::post('job-listings/{id}', [JobListingController::class, 'update']);
+        Route::delete('job-listings/{id}', [JobListingController::class, 'destroy']);
     });
 
     // ------------------------- TEACHER ROUTES -------------------------
@@ -114,29 +118,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('lessons/{lesson}/questions/store', [LessonQuestionController::class, 'store']);
     });
 
-    // ------------------------- SHARED ADMIN & TEACHER -------------------------
-    Route::middleware('is.AdminOrTeacher')->group(function () {
-        Route::get('teachers/{teacher}/courses', [UserController::class, 'teacherCourses']);
-    });
+    // ------------------------- STUDENT & AUTH USER ROUTES -------------------------
+    Route::get('comments', [CommentController::class, 'index']);
+    Route::post('comments', [CommentController::class, 'store']);
+    Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
 
-    // ------------------------- STUDENT / AUTH USER ROUTES -------------------------
-    Route::group([], function () {
-        Route::get('comments', [CommentController::class, 'index']);
-        Route::post('comments', [CommentController::class, 'store']);
-        Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+    Route::post('deposit', [PaymentController::class, 'deposit']); 
+    Route::get('simulate-payment/{order_id}', [PaymentController::class, 'simulateSuccess']); 
+    Route::post('wallet/update', [PaymentController::class, 'updateWalletInfo']);
+    
+    Route::post('courses/{course}/purchase', [PurchaseController::class, 'purchaseCourse']);
+    Route::get('my-courses', [UserController::class, 'getMyCourses']); 
+    Route::post('lessons/{lesson}/complete', [LessonController::class, 'completeLesson']);
+    Route::post('lessons/{lesson}/questions/submit', [LessonQuestionController::class, 'submitAnswers']);
+    Route::get('lessons/{lesson}/questions', [LessonQuestionController::class, 'getQuestions']);
 
-        Route::post('deposit', [PaymentController::class, 'deposit']); 
-        Route::get('simulate-payment/{order_id}', [PaymentController::class, 'simulateSuccess']); 
-        Route::post('wallet/update', [PaymentController::class, 'updateWalletInfo']);
-        
-        Route::post('courses/{course}/purchase', [PurchaseController::class, 'purchaseCourse']);
-        Route::get('my-courses', [UserController::class, 'getMyCourses']); 
-        Route::post('lessons/{lesson}/complete', [LessonController::class, 'completeLesson']);
-        Route::post('lessons/{lesson}/questions/submit', [LessonQuestionController::class, 'submitAnswers']);
-        Route::get('lessons/{lesson}/questions', [LessonQuestionController::class, 'getQuestions']);
-
-        Route::get('profile', [ProfileController::class, 'show']);
-        Route::post('profile/update', [ProfileController::class, 'update']);
-        
-    });
+    Route::get('profile', [ProfileController::class, 'show']);
+    Route::post('profile/update', [ProfileController::class, 'update']);
 });
