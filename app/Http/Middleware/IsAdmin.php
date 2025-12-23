@@ -7,20 +7,19 @@ use Illuminate\Http\Request;
 
 class IsAdmin
 {
-    
-    //-------------------------------التحقق من أن المستخدم الحالي هو أدمن أو سوبر أدمن------------------------
+    public function handle(Request $request, Closure $next)
+    {
+        $user = $request->user();
 
-            public function handle(Request $request, Closure $next)
-            {
-                $user = $request->user();
+        // السماح فقط للأدمن أو السوبر أدمن بشرط أن يكون الحساب نشطاً
+        if (!$user || ($user->role_id !== 1 && !$user->is_super_admin) || $user->status !== 'active') {
+            return response()->json([
+                'message' => $user && $user->status === 'suspended' 
+                    ? 'حسابك معلق، يرجى التواصل مع الإدارة' 
+                    : 'Unauthorized'
+            ], 403);
+        }
 
-                // السماح لأي مستخدم role_id = 1 (Admin أو Super Admin)
-                if (!$user || $user->role_id !== 1) {
-                    return response()->json(['message' => 'Unauthorized'], 403);
-                }
-
-                return $next($request);
-            }
-
-
+        return $next($request);
+    }
 }

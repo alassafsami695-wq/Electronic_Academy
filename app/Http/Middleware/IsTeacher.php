@@ -9,19 +9,17 @@ class IsTeacher
 {
     public function handle(Request $request, Closure $next)
     {
-        $user = auth()->user();
+        $user = $request->user();
 
-        // السماح للـ Teacher أو Admin أو Super Admin
-        if (
-            !$user ||
-            (
-                $user->role_id !== 2 && // Teacher
-                $user->role_id !== 3 && // Admin
-                !$user->is_super_admin   // Super Admin
-            )
-        ) {
+        // السماح للأستاذ (2) أو الأدمن (3 أو 1 حسب توزيعك) أو السوبر أدمن
+        // ملاحظة: تأكد من أرقام الـ role_id في قاعدة بياناتك (غالباً 1 للأدمن و 2 للأستاذ)
+        $isAuthorizedRole = ($user->role_id === 2 || $user->role_id === 1 || $user->is_super_admin);
+
+        if (!$user || !$isAuthorizedRole || $user->status !== 'active') {
             return response()->json([
-                'message' => 'Forbidden: Teachers only.'
+                'message' => $user && $user->status === 'suspended' 
+                    ? 'حسابك معلق، لا يمكنك القيام بهذه العملية' 
+                    : 'Forbidden: Teachers and Admins only.'
             ], 403);
         }
 

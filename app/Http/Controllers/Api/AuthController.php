@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
@@ -14,8 +15,20 @@ use Exception;
 
 class AuthController extends Controller
 {
-    // -------------------- تسجيل مستخدم جديد + إنشاء محفظة + إرسال كود التحقق ------------------
-    public function register(Request $request)
+    // -------------------- تسجيل طالب جديد ------------------
+    public function registerStudent(Request $request)
+    {
+        return $this->handleRegistration($request, 'user');
+    }
+
+    // -------------------- تسجيل أستاذ جديد ------------------
+    public function registerTeacher(Request $request)
+    {
+        return $this->handleRegistration($request, 'teacher');
+    }
+
+    // -------------------- منطق التسجيل المشترك ------------------
+    private function handleRegistration(Request $request, $roleName)
     {
         // 1. التحقق من البيانات
         $validatedData = $request->validate([
@@ -27,24 +40,25 @@ class AuthController extends Controller
         ]);
 
         $verificationCode = rand(100000, 999999);
-        $studentRole = Role::where('name', 'user')->firstOrFail();
+        $role = Role::where('name', $roleName)->firstOrFail();
 
         try {
-            // 2. استخدام Transaction لضمان إنشاء (المستخدم + المحفظة) ككتلة واحدة
-            $user = DB::transaction(function () use ($validatedData, $verificationCode, $studentRole, $request) {
+            // 2. استخدام Transaction لضمان إنشاء (المستخدم + المحفظة)
+            $user = DB::transaction(function () use ($validatedData, $verificationCode, $role, $request) {
                 
                 $user = User::create([
-                    'name'                     => $validatedData['name'],
-                    'email'                    => $validatedData['email'],
-                    'password'                 => Hash::make($validatedData['password']),
-                    'email_verification_code'  => $verificationCode,
-                    'role_id'                  => $studentRole->id,
-                    'is_verified'              => false,
+                    'name'                    => $validatedData['name'],
+                    'email'                   => $validatedData['email'],
+                    'password'                => Hash::make($validatedData['password']),
+                    'email_verification_code' => $verificationCode,
+                    'role_id'                 => $role->id,
+                    'is_verified'             => false,
+                    'status'                  => 'active', // الحساب نشط افتراضياً حتى يتم تعليقه من الأدمن
                 ]);
 
-                // إنشاء المحفظة مع البيانات البنكية وكلمة المرور المشفرة
+                // إنشاء المحفظة
                 $user->wallet()->create([
-                    'balance'         => 0.00, // يمكنك تغيير القيمة الافتراضية هنا
+                    'balance'         => 0.00,
                     'account_number'  => $request->account_number ?? 'SHAM-' . rand(10000, 99999),
                     'wallet_password' => Hash::make($validatedData['wallet_password']),
                 ]);
@@ -52,7 +66,7 @@ class AuthController extends Controller
                 return $user;
             });
 
-            // 3. إرسال بريد التحقق (خارج الـ Transaction لسرعة الأداء)
+            // 3. إرسال بريد التحقق
             Mail::raw("كود التحقق الخاص بك في الأكاديمية الإلكترونية هو: " . $verificationCode, function ($message) use ($user) {
                 $message->to($user->email)
                         ->subject('Email Verification Code');
@@ -60,7 +74,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'status'  => 'success',
-                'message' => 'تم التسجيل بنجاح، يرجى التحقق من بريدك الإلكتروني للحصول على الكود.',
+                'message' => "تم التسجيل بنجاح كـ " . ($roleName == 'teacher' ? 'أستاذ' : 'طالب') . "، يرجى التحقق من بريدك الإلكتروني.",
                 'user'    => $user->load('wallet')
             ], 201);
 
@@ -72,7 +86,7 @@ class AuthController extends Controller
         }
     }
 
-    // ------------------------ تسجيل الدخول ----------------------------------------
+    // ------------------------ تسجيل الدخول (مع فحص حالة الحساب) ------------------------
     public function login(Request $request)
     {
         $request->validate([
@@ -85,6 +99,12 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+
+        // فحص إذا كان الحساب معلقاً من قبل الأدمن
+        if ($user->status === 'suspended') {
+            Auth::logout();
+            return response()->json(['message' => 'عذراً، حسابك معلق حالياً، يرجى التواصل مع الإدارة'], 403);
+        }
 
         if (!$user->is_verified) {
             return response()->json(['message' => 'يرجى تفعيل الحساب أولاً عبر البريد الإلكتروني'], 403);
@@ -100,6 +120,7 @@ class AuthController extends Controller
                 'id'     => $user->id,
                 'name'   => $user->name,
                 'email'  => $user->email,
+                'status' => $user->status,
                 'type'   => $user->is_super_admin ? 'super_admin' : ($user->role->name ?? 'user'),
                 'wallet' => $user->wallet,
             ]
@@ -124,13 +145,11 @@ class AuthController extends Controller
             return response()->json(['message' => 'كود التحقق غير صحيح'], 400);
         }
 
-        // تحديث حالة التحقق وإفراغ الكود
         $user->is_verified = true;
         $user->email_verified_at = now();
         $user->email_verification_code = null;
         $user->save();
 
-        // تسجيل دخول تلقائي
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -151,7 +170,6 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-
         return response()->json(['message' => 'تم تسجيل الخروج بنجاح']);
     }
 }

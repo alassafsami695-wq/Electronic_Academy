@@ -13,11 +13,11 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        // 🌱 إضافة الأدوار الأساسية
+        // شحن الأدوار الأساسية فوراً
         DB::table('roles')->insert([
-            ['name' => 'admin', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'teacher', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'user', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 1, 'name' => 'admin', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2, 'name' => 'teacher', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3, 'name' => 'user', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 

@@ -9,7 +9,6 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Models\Lesson;
 
 class User extends Authenticatable
 {
@@ -20,6 +19,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
+        'status', 
         'email_verification_code',
         'is_verified',
         'is_super_admin',
@@ -79,10 +79,9 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
-    // ---- Roles helpers ----
+    // ---- Helpers ----
     public function isAdmin(): bool
     {
-        // يدعم super admin أو دور admin بالاسم
         return (bool) $this->is_super_admin
             || (optional($this->role)->name && strtolower($this->role->name) === 'admin');
     }
@@ -92,13 +91,8 @@ class User extends Authenticatable
         return optional($this->role)->name && strtolower($this->role->name) === 'teacher';
     }
 
-    public function isStudent(): bool
+    public function isSuspended(): bool
     {
-        return optional($this->role)->name && strtolower($this->role->name) === 'user';
-    }
-
-    public function hasRole(string $role): bool
-    {
-        return optional($this->role)->name && strtolower($this->role->name) === strtolower($role);
+        return $this->status === 'suspended';
     }
 }
