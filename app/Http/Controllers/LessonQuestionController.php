@@ -101,14 +101,25 @@ class LessonQuestionController extends Controller
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
-        public function getQuestions(Lesson $lesson)
+        public function getQuestions(Lesson $lesson) 
     {
-        $questions = $lesson->questions()->select('id', 'type', 'question', 'options')->get();
+        $user = auth()->user();
 
-        return response()->json([
-            'lesson_id' => $lesson->id,
-            'questions' => $questions
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        // 1. التحقق إذا كان المستخدم هو الأدمن أو صاحب الكورس (المدرس)
+        $isOwnerOrAdmin = $user->is_super_admin || $lesson->course->teacher_id === $user->id;
+
+        // 2. التحقق إذا كان الطالب مشتركاً بالفعل في هذا الكورس
+        $isEnrolled = $user->enrolledCourses()->where('course_id', $lesson->course_id)->exists();
+
+        if (!$isOwnerOrAdmin && !$isEnrolled) {
+            return response()->json([
+                'message' => 'يجب عليك الاشتراك في هذا الكورس أولاً للوصول إلى الأسئلة.'
+            ], 403);
+        }
+
+        // إذا نجح التحقق، اعرض الأسئلة
+        $questions = $lesson->questions; 
+        return response()->json($questions, 200);
     }
 
 }

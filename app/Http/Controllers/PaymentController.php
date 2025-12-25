@@ -23,55 +23,44 @@ class PaymentController extends Controller
      * 1. شراء كورس وتقسيم الأرباح
      * (جديد: يخصم من الطالب، يعطي الأستاذ 80% والسوبر أدمن 20%)
      */
+        // تم إضافة التحسينات الأمنية التالية:
     public function purchaseCourse(Request $request, $courseId)
     {
         $student = Auth::user();
-        $course = Course::with('teacher.wallet')->findOrFail($courseId);
+        
+        // استخدام Lock لضمان عدم حدوث Race Condition
+        return DB::transaction(function () use ($student, $courseId) {
+            $studentWallet = $student->wallet()->lockForUpdate()->first();
+            $course = Course::with('teacher.wallet')->findOrFail($courseId);
 
-        // 1. التحقق من الرصيد
-        if (!$student->wallet || $student->wallet->balance < $course->price) {
-            return response()->json(['error' => 'رصيدك غير كافٍ لشراء هذا الكورس'], 400);
-        }
+            if (!$studentWallet || $studentWallet->balance < $course->price) {
+                return response()->json(['error' => 'رصيدك غير كافٍ'], 400);
+            }
 
-        // 2. التحقق مما إذا كان الطالب قد اشترى الكورس مسبقاً
-        if ($student->enrolledCourses()->where('course_id', $courseId)->exists()) {
-            return response()->json(['message' => 'أنت مشترك في هذا الكورس بالفعل'], 400);
-        }
+            if ($student->enrolledCourses()->where('course_id', $courseId)->exists()) {
+                return response()->json(['message' => 'أنت مشترك بالفعل'], 400);
+            }
 
-        try {
-            DB::transaction(function () use ($student, $course) {
-                // أ. خصم المبلغ من محفظة الطالب
-                $student->wallet->decrement('balance', $course->price);
+            // الخصم والتوزيع
+            $studentWallet->decrement('balance', $course->price);
+            
+            $teacherShare = $course->price * 0.80;
+            $adminShare   = $course->price * 0.20;
 
-                // ب. حساب تقسيم الأرباح (مثال: 80% للأستاذ، 20% للمنصة)
-                $teacherShare = $course->price * 0.80;
-                $adminShare   = $course->price * 0.20;
+            if ($course->teacher && $course->teacher->wallet) {
+                $course->teacher->wallet()->increment('balance', $teacherShare);
+            }
 
-                // ج. تحويل حصة الأستاذ إلى محفظته
-                if ($course->teacher && $course->teacher->wallet) {
-                    $course->teacher->wallet->increment('balance', $teacherShare);
-                }
+            $superAdmin = User::where('role', 'admin')->first(); // البحث بالرتبة بدل true/false فقط
+            if ($superAdmin && $superAdmin->wallet) {
+                $superAdmin->wallet()->increment('balance', $adminShare);
+            }
 
-                // د. تحويل حصة المنصة (السوبر أدمن)
-                $superAdmin = User::where('is_super_admin', true)->first();
-                if ($superAdmin && $superAdmin->wallet) {
-                    $superAdmin->wallet->increment('balance', $adminShare);
-                }
+            $student->enrolledCourses()->attach($course->id);
 
-                // هـ. تسجيل الطالب في الكورس
-                $student->enrolledCourses()->attach($course->id);
-            });
-
-            return response()->json([
-                'success' => true,
-                'message' => 'تم شراء الكورس بنجاح وتوزيع الأرباح'
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'حدث خطأ أثناء عملية الشراء: ' . $e->getMessage()], 500);
-        }
+            return response()->json(['success' => true, 'message' => 'تمت العملية بأمان']);
+        });
     }
-
     /**
      * 2. طلب شحن الرصيد
      */

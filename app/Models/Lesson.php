@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Comment;
 use App\Models\Question;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Lesson extends Model
 {
+
+    use HasFactory;
+    
     //---------------- الحقول القابلة للتعبئة -----------------
     protected $fillable = [
         'course_id',   

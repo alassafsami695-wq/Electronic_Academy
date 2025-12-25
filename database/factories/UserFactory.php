@@ -29,7 +29,10 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
-        ];
+            // أضف السطر التالي لضمان وجود role_id دائماً
+
+        'role_id' => \App\Models\Role::where('name', 'student')->first()?->id 
+             ?? \App\Models\Role::create(['name' => 'student'])->id,        ];
     }
 
     /**
