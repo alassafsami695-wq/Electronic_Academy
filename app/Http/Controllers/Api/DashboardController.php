@@ -95,19 +95,45 @@ class DashboardController extends Controller
     /**
      * دالة سحب الأرباح - محصورة برمجياً بالسوبر أدمن فقط
      */
-    public function withdrawRevenue(Request $request)
+    public function withdraw(Request $request)
     {
-        if (!auth()->user()->is_super_admin) {
-            return response()->json([
-                'success' => false,
-                'message' => 'عذراً، يحق فقط للسوبر أدمن تنفيذ عمليات السحب المالي.'
-            ], 403);
+        $request->validate([
+            'amount' => 'required|numeric|min:1',
+        ]);
+
+        $user = auth()->user();
+        
+        // 1. التأكد من أن المستخدم لديه محفظة
+        if (!$user->wallet) {
+            return response()->json(['success' => false, 'message' => 'لا تمتلك محفظة إلكترونية'], 404);
         }
 
-        // منطق السحب يوضع هنا
+        // 2. التحقق من الرصيد المتوفر في محفظة المستخدم الحالي (سواء كان أدمن أو أستاذ)
+        if ($user->wallet->balance < $request->amount) {
+            return response()->json(['success' => false, 'message' => 'رصيدك الحالي غير كافٍ لإتمام عملية السحب'], 400);
+        }
+
+        // 3. تحديد الصلاحيات: الأستاذ يسحب أرباحه، والسوبر أدمن يسحب أرباح التطبيق
+        if ($user->isAdmin() || $user->isTeacher()) {
+            
+            return DB::transaction(function () use ($user, $request) {
+                // تنفيذ عملية الخصم من محفظة الشخص الذي قام بطلب السحب
+                $user->wallet->decrement('balance', $request->amount);
+                
+                // هنا يفضل تسجيل العملية في جدول التحويلات (Transactions) للتدقيق لاحقاً
+                
+                return response()->json([
+                    'success' => true, 
+                    'message' => $user->isAdmin() ? 'تم سحب أرباح المنصة بنجاح' : 'تم سحب أرباحك كأستاذ بنجاح',
+                    'current_balance' => $user->wallet->fresh()->balance
+                ]);
+            });
+        }
+
+        // 4. منع الطالب أو أي رتبة أخرى من السحب
         return response()->json([
-            'success' => true,
-            'message' => 'تم التوجيه لعملية السحب بنجاح.'
-        ]);
+            'success' => false, 
+            'message' => 'عذراً، هذه العملية مخصصة فقط للأساتذة وإدارة التطبيق'
+        ], 403);
     }
 }

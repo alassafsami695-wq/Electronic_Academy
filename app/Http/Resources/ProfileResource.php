@@ -2,49 +2,41 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProfileResource extends JsonResource
 {
     public function toArray($request)
     {
+        $user = $this->user;
+
         return [
-
-            // -------------------------
-            // بيانات المستخدم الأساسية
-            // -------------------------
-            'name'         => optional($this->user)->name,
-            'email'        => optional($this->user)->email,
-
-            // -------------------------
-            // بيانات البروفايل الأساسي
-            // -------------------------
-            'photo'        => $this->photo
-                                ? asset('storage/' . $this->photo)
-                                : null,
-
+            'id'           => $user->id,
+            'name'         => $user->name,
+            'email'        => $user->email,
+            'role'         => $user->role,
+            'photo'        => $this->photo ? asset('storage/' . $this->photo) : null,
             'address'      => $this->address,
             'phone_number' => $this->phone_number,
-
-            // -------------------------
-            // بيانات المدرس (تظهر فقط إذا كان Teacher)
-            // -------------------------
-            'teacher_profile' => $this->user->isTeacher() && $this->user->teacherProfile ? [
-
-                'photo' => $this->user->teacherProfile->photo
-                    ? asset('storage/' . $this->user->teacherProfile->photo)
-                    : null,
-
-                'facebook_url'  => $this->user->teacherProfile->facebook_url,
-                'linkedin_url'  => $this->user->teacherProfile->linkedin_url,
-                'instagram_url' => $this->user->teacherProfile->instagram_url,
-                'youtube_url'   => $this->user->teacherProfile->youtube_url,
-                'github_url'    => $this->user->teacherProfile->github_url,
-
+            'birth_date'   => $this->birth_date, // يظهر للجميع
+            
+            // بيانات المحفظة
+            'wallet'       => $user->wallet ? [
+                'balance'        => $user->wallet->balance,
+                'account_number' => $user->wallet->account_number,
             ] : null,
 
-            'wallet' => $this->user->wallet, 
+            // بيانات المدرس (تظهر فقط إذا كان الحساب مدرس)
+            'teacher_details' => ($user->role === 'teacher' && $user->teacherProfile) ? [
+                'facebook_url'  => $user->teacherProfile->facebook_url,
+                'linkedin_url'  => $user->teacherProfile->linkedin_url,
+                'instagram_url' => $user->teacherProfile->instagram_url,
+                'youtube_url'   => $user->teacherProfile->youtube_url,
+                'github_url'    => $user->teacherProfile->github_url,
+            ] : null,
+            
+            // بيانات إضافية للأدمن (مثلاً)
+            'is_admin' => $user->role === 'admin',
         ];
     }
 }

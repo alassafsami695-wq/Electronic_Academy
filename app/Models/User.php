@@ -95,4 +95,12 @@ class User extends Authenticatable
     {
         return $this->status === 'suspended';
     }
+
+
+// إضافة العلاقة مع الكورسات المفضلة
+    public function wishlist(): BelongsToMany
+    {
+        return $this->belongsToMany(Course::class, 'wishlists', 'user_id', 'course_id')
+                    ->withTimestamps();
+    }
 }

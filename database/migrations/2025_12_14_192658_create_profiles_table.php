@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('profiles', function (Blueprint $table) {
@@ -21,6 +18,7 @@ return new class extends Migration
             $table->string('photo')->nullable();
             $table->string('address')->nullable();
             $table->string('phone_number')->nullable();
+            $table->date('birth_date')->nullable(); 
 
             $table->timestamps();
         });
@@ -30,5 +28,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('profiles');
     }
-
 };

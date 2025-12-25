@@ -98,4 +98,12 @@ class Course extends Model
     {
         return $this->photo ? asset('storage/' . $this->photo) : null;
     }
+
+
+// من أضاف هذا الكورس للمفضلة
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'wishlists', 'course_id', 'user_id')
+                    ->withTimestamps();
+    }
 }
