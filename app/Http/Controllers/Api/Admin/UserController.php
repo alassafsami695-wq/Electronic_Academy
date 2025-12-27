@@ -20,6 +20,7 @@ class UserController extends Controller
     {
         $this->middleware('auth:sanctum');
         $this->middleware('is.Admin');
+        
     }
 
     public function index(Request $request)
@@ -138,24 +139,24 @@ class UserController extends Controller
         return response()->json(['data' => $courses]);
     }
 
-    public function getMyCourses()
-    {
-        $user = auth()->user();
-        $courses = $user->enrolledCourses()->with('lessons')->get();
+    // public function getMyCourses()
+    // {
+    //     $user = auth()->user();
+    //     $courses = $user->enrolledCourses()->with('lessons')->get();
 
-        $coursesWithProgress = $courses->map(function ($course) use ($user) {
-            $totalLessons = $course->lessons->count();
-            $completedLessons = $user->completedLessons()->where('course_id', $course->id)->count();
-            $progress = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100, 2) : 0;
+    //     $coursesWithProgress = $courses->map(function ($course) use ($user) {
+    //         $totalLessons = $course->lessons->count();
+    //         $completedLessons = $user->completedLessons()->where('course_id', $course->id)->count();
+    //         $progress = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100, 2) : 0;
 
-            return [
-                'course'            => $course,
-                'total_lessons'     => $totalLessons,
-                'completed_lessons' => $completedLessons,
-                'progress'          => $progress,
-            ];
-        });
+    //         return [
+    //             'course'            => $course,
+    //             'total_lessons'     => $totalLessons,
+    //             'completed_lessons' => $completedLessons,
+    //             'progress'          => $progress,
+    //         ];
+    //     });
 
-        return response()->json(['data' => $coursesWithProgress]);
-    }
+    //     return response()->json(['data' => $coursesWithProgress]);
+    // }
 }

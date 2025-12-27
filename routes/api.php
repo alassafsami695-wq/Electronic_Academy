@@ -4,25 +4,18 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\{
     AuthController, ProfileController, AdvertisementController, 
     FeatureController, PathController, JobListingController,
-    DashboardController, WishlistController // تم إضافة WishlistController هنا
+    DashboardController, WishlistController
 };
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Teacher\{CourseController, LessonController, CommentController, PurchaseController};
 use App\Http\Controllers\{LessonQuestionController, PaymentController, ContactSettingController};
 
-/*
-|--------------------------------------------------------------------------
-| المسارات العامة (Public Routes)
-|--------------------------------------------------------------------------
-*/
+/* Public Routes */
 Route::get('ads', [AdvertisementController::class, 'index']); 
 Route::get('features', [FeatureController::class, 'index']); 
 Route::get('features/{id}', [FeatureController::class, 'show']);
 Route::get('contact-settings', [ContactSettingController::class, 'index']);
-
-// عرض بروفايل المدرس للعلن
 Route::get('/teachers/{id}', [ProfileController::class, 'publicShow']);
-
 Route::get('/paths', [PathController::class, 'index']);
 Route::get('/paths/{path}', [PathController::class, 'show']);
 Route::get('/paths/{path}/courses', [PathController::class, 'course']);
@@ -41,36 +34,26 @@ Route::prefix('job-listings')->group(function () {
     Route::get('/{job}', [JobListingController::class, 'show'])->name('job-listings.show');
 });
 
-/*
-|--------------------------------------------------------------------------
-| المسارات المحمية (Protected Routes)
-|--------------------------------------------------------------------------
-*/
+/* Protected Routes */
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/dashboard/stats', [DashboardController::class, 'index']);
-
-
     Route::post('wallet/withdraw', [DashboardController::class, 'withdraw']);
 
-    // -----------------------------------------------------------
-    //  البروفايل الموحد (أدمن - مدرس - طالب)
-    // -----------------------------------------------------------
     Route::get('profile', [ProfileController::class, 'show']);
     Route::post('profile/update', [ProfileController::class, 'update']);
 
-    // -----------------------------------------------------------
-    //  مسارات المفضلة (Wishlist) 
-    // -----------------------------------------------------------
+        Route::get('my-courses', [CourseController::class, 'myCourses']); 
+    Route::get('courses/{course}', [CourseController::class, 'show']);
+
     Route::get('wishlist', [WishlistController::class, 'index']);
     Route::post('wishlist/toggle', [WishlistController::class, 'toggleWishlist']);
 
-    // ------------------------- ADMIN ROUTES -------------------------
+    /* Admin Routes */
     Route::middleware('is.Admin')->prefix('admin')->group(function () {
         Route::get('users', [UserController::class, 'index']);
         Route::get('users/{user}', [UserController::class, 'show']);
-        // Route::post('withdraw', [DashboardController::class, 'withdrawRevenue']);
         Route::post('users/{user}/toggle-status', [UserController::class, 'toggleStatus']);
         Route::post('admins', [UserController::class, 'storeAdmin']);
         Route::delete('users/{user}', [UserController::class, 'destroyUser']); 
@@ -85,12 +68,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('features/{feature}/update', [FeatureController::class, 'update']); 
         Route::delete('features/{feature}', [FeatureController::class, 'destroy']); 
         Route::post('contact-settings', [ContactSettingController::class, 'update']);
-        Route::post('job-listings', [JobListingController::class, 'store'])->name('admin.job-listings.store');
-        Route::post('job-listings/{id}', [JobListingController::class, 'update'])->name('admin.job-listings.update');
-        Route::delete('job-listings/{id}', [JobListingController::class, 'destroy'])->name('admin.job-listings.destroy');
+        Route::post('job-listings', [JobListingController::class, 'store']);
+        Route::post('job-listings/{id}', [JobListingController::class, 'update']);
+        Route::delete('job-listings/{id}', [JobListingController::class, 'destroy']);
     });
 
-    // ------------------------- TEACHER ROUTES -------------------------
+    /* Teacher Routes */
     Route::middleware('is.Teacher')->prefix('teacher')->group(function () {
         Route::get('courses', [CourseController::class, 'index']);
         Route::get('courses/{course}', [CourseController::class, 'show']);
@@ -105,15 +88,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('lessons/{lesson}/questions/store', [LessonQuestionController::class, 'store']);
     });
 
-    // ------------------------- SHARED / STUDENT ROUTES -------------------------
+    /* Student & Shared Routes */
     Route::get('comments', [CommentController::class, 'index']);
     Route::post('comments', [CommentController::class, 'store']);
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
     Route::post('deposit', [PaymentController::class, 'deposit']); 
     Route::get('simulate-payment/{order_id}', [PaymentController::class, 'simulateSuccess']); 
     Route::post('wallet/update', [PaymentController::class, 'updateWalletInfo']);
-    Route::post('courses/{course}/purchase', [PurchaseController::class, 'purchaseCourse']);
-    Route::get('my-courses', [UserController::class, 'getMyCourses']); 
+
+    // المشتريات (محدثة لدعم السلة)
+    Route::post('courses/purchase', [PurchaseController::class, 'purchaseCourses']);
+    
+    // مشترياتي (محدثة)
+
+
+
     Route::post('lessons/{lesson}/complete', [LessonController::class, 'completeLesson']);
     Route::post('lessons/{lesson}/questions/submit', [LessonQuestionController::class, 'submitAnswers']);
     Route::get('lessons/{lesson}/questions', [LessonQuestionController::class, 'getQuestions']);
