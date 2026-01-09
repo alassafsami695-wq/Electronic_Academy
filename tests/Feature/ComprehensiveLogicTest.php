@@ -27,11 +27,9 @@ class ComprehensiveLogicTest extends TestCase
         $course = Course::factory()->create();
         $student = User::factory()->create(['is_verified' => true]);
 
-        // بناءً على ملف الروابط: الوصول للكورس الخاص يتطلب اشتراك
         $response = $this->actingAs($student, 'sanctum')
                          ->getJson("/api/courses/{$course->id}");
 
-        // إذا كان النظام يمنع غير المشتركين، يجب أن يعيد 403
         $response->assertStatus(403);
     }
 

@@ -31,7 +31,7 @@ class AdvertisementController extends Controller
             'title'      => 'required|string|max:255',
             'image'      => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'link'       => 'nullable|url',
-            'description' => 'nullable|string', // التحقق من الوصف            
+            'description' => 'nullable|string',            
             'start_date' => 'required|date',
             'end_date'   => 'required|date|after:start_date',
         ]);

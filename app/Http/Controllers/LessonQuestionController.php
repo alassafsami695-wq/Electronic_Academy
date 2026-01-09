@@ -13,9 +13,7 @@ class LessonQuestionController extends Controller
     // 1) توليد الأسئلة وحفظ سؤال واحد من كل نوع
     public function generateAndStore(Request $request, Lesson $lesson, QuestionGenerationService $service)
     {
-        // $request->validate([
-        //     'text' => 'required|string'
-        // ]);
+      
 
         // بدلاً من أخذ النص من الـ Request، نأخذه من محتوى الدرس المخزن
         $generated = $service->generateQuestions($lesson->content);

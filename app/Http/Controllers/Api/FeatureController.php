@@ -17,7 +17,6 @@ class FeatureController extends Controller
     {
         $features = Feature::all();
         
-        // تحويل مسار الصورة لرابط كامل ليظهر في الفرونت إند
         $features->transform(function ($feature) {
             if ($feature->image) {
                 $feature->image = asset('storage/' . $feature->image);

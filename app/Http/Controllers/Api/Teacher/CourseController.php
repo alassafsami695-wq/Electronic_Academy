@@ -21,20 +21,10 @@ class CourseController extends Controller
     {
         $user = auth()->user();
 
+        // الـ progress_percentage سيظهر تلقائياً مع كل كورس بفضل ميزة appends في الموديل
         $courses = $user->enrolledCourses()
             ->with(['teacher', 'path']) 
             ->get();
-
-        foreach ($courses as $course) {
-            $totalLessons = $course->lessons()->count();
-            $completedLessons = $user->completedLessons()
-                ->whereIn('lesson_id', $course->lessons()->pluck('id'))
-                ->count();
-
-            $course->progress = $totalLessons > 0
-                ? round(($completedLessons / $totalLessons) * 100, 2)
-                : 0;
-        }
 
         return response()->json([
             'status' => 'success',

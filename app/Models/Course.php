@@ -49,11 +49,16 @@ class Course extends Model
         return $this->hasMany(Lesson::class)->orderBy('order');
     }
 
-    // العلاقة الجديدة للتحقق من المشتركين
     public function enrolledUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'course_user');
     }
+
+            public function questions()
+    {
+        return $this->hasManyThrough(Question::class, Lesson::class);
+    }
+
 
     // ---- Query scopes ----
     public function scopeVisibleFor($query, ?User $user = null)
@@ -65,25 +70,25 @@ class Course extends Model
     }
 
     // ---- Accessors ----
-    public function getProgressPercentageAttribute(): float
+   public function getProgressPercentageAttribute(): float
     {
-        $user = Auth::guard('sanctum')->user();
+        // نستخدم auth()->user() بدلاً من تحديد الـ guard يدوياً لضمان التوافق
+        $user = auth('sanctum')->user();
 
         if (!$user) {
             return 0.0;
         }
 
-        $lessonIds = $this->relationLoaded('lessons')
-            ? $this->lessons->pluck('id')
-            : $this->lessons()->pluck('id');
-
-        $totalLessons = $lessonIds->count();
+        // نستخدم الحساب المباشر لضمان الدقة
+        $totalLessons = $this->lessons()->count();
+        
         if ($totalLessons === 0) {
             return 0.0;
         }
 
-        $completedLessonsCount = $user->completedLessons()
-            ->whereIn('lesson_id', $lessonIds)
+        $completedLessonsCount = \DB::table('lesson_completions')
+            ->where('user_id', $user->id)
+            ->whereIn('lesson_id', $this->lessons()->pluck('id'))
             ->count();
 
         return round(($completedLessonsCount / $totalLessons) * 100, 2);
@@ -118,9 +123,5 @@ public function getPhotoUrlAttribute(): ?string
                     ->withTimestamps();
     }
 
-        public function questions()
-    {
-        // الكورس لديه أسئلة من خلال الدروس
-        return $this->hasManyThrough(Question::class, Lesson::class);
-    }
+
 }
